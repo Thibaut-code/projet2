@@ -7,7 +7,7 @@ Site statique autonome : aucun npm, serveur applicatif ou base de données néce
 
 1. Décompressez l'archive.
 2. Dans VS Code : Fichier > Ouvrir le dossier, puis sélectionnez le dossier contenant index.html.
-3. Ouvrez index.html dans votre navigateur pour voir le site.
+3. Ouvrez index.html dans votre navigateur pour voir le site..
 
 ## Fichiers.
 
