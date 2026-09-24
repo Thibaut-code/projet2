@@ -126,12 +126,40 @@
 </div>
 </section>
 <section class="contact" id="contact">
-<div>
+<div class="contact-intro">
 <p class="eyebrow">La suite commence avec vous</p>
 <h2>Un projet en tête ?<br>Parlons-en.</h2>
+<p class="contact-text">Un nouveau site, une idée d’application ou des logiciels à connecter ? Préparez quelques mots sur votre activité et ce que vous aimeriez améliorer. Ce sera le point de départ de notre échange.</p>
+<div class="contact-details">
+<a href="tel:+32479824183"><span>Téléphone</span><strong>0479 82 41 83</strong></a>
+<a href="mailto:courtois.thibaut@hotmail.be"><span>E-mail</span><strong>courtois.thibaut@hotmail.be</strong></a>
 </div>
-<p>Un nouveau site, une idée d’application ou des logiciels à connecter ? Préparez quelques mots sur votre activité et ce que vous aimeriez améliorer. Ce sera le point de départ de notre échange.</p>
+</div>
+<div class="contact-action">
+<button class="contact-button" type="button" id="open-contact-form">Me contacter <span aria-hidden="true">→</span></button>
+<p class="contact-hint">Décrivez votre projet en quelques lignes. Je vous répondrai directement par e-mail ou téléphone.</p>
+</div>
 </section>
+<dialog class="contact-dialog" id="contact-dialog" aria-labelledby="contact-dialog-title">
+<form class="contact-form" action="https://formsubmit.co/courtois.thibaut@hotmail.be" method="POST">
+<button class="dialog-close" type="button" id="close-contact-form" aria-label="Fermer">×</button>
+<p class="eyebrow">Votre projet</p>
+<h2 id="contact-dialog-title">Parlez-moi de votre idée.</h2>
+<input type="hidden" name="_subject" value="Nouvelle demande depuis thibautcourtois.be">
+<input type="hidden" name="_captcha" value="false">
+<input type="text" name="_honey" class="honeypot" tabindex="-1" autocomplete="off">
+<div class="form-grid">
+<label>Nom et prénom<input type="text" name="Nom" autocomplete="name" required></label>
+<label>Adresse e-mail<input type="email" name="Email" autocomplete="email" required></label>
+<label>Téléphone <small>(facultatif)</small><input type="tel" name="Téléphone" autocomplete="tel"></label>
+<label>Société <small>(facultatif)</small><input type="text" name="Société" autocomplete="organization"></label>
+</div>
+<label>Type de projet<select name="Type de projet"><option>Site web</option><option>Application web</option><option>API / intégration</option><option>Autre</option></select></label>
+<label>Votre message<textarea name="Message" rows="6" placeholder="Décrivez brièvement votre activité, votre besoin et ce que vous aimeriez améliorer." required></textarea></label>
+<button class="form-submit" type="submit">Envoyer ma demande <span aria-hidden="true">→</span></button>
+<p class="form-note">Votre message sera envoyé à courtois.thibaut@hotmail.be.</p>
+</form>
+</dialog>
 </div>
 </main>
 <footer>
@@ -142,5 +170,13 @@
 <a href="#accueil">Retour en haut ↑</a>
 </div>
 </footer>
+<script>
+const contactDialog = document.getElementById('contact-dialog');
+document.getElementById('open-contact-form').addEventListener('click', () => contactDialog.showModal());
+document.getElementById('close-contact-form').addEventListener('click', () => contactDialog.close());
+contactDialog.addEventListener('click', event => {
+  if (event.target === contactDialog) contactDialog.close();
+});
+</script>
 </body>
 </html>
