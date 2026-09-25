@@ -1,76 +1,204 @@
 <!doctype html>
 <html lang="fr">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Facture Facile · Devis et factures</title>
-  <meta name="description" content="Vos devis et factures, étape par étape.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23194739'/%3E%3Cpath d='M10 8h13v4h-9v4h7v4h-7v6h-4z' fill='white'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=themes-metiers-8">
-</head>
-<body>
-  <a class="skip" href="#main">Aller au contenu</a>
-  <div class="layout">
-    <aside>
-      <a class="brand" href="#home" aria-label="Facture Facile, accueil">
-        <span class="brand-symbol" aria-hidden="true">
-          <svg viewBox="0 0 74 76" fill="none"><path d="M5 30 37 6l32 24v40H5V30Z" stroke="currentColor" stroke-width="2.4"/><path d="M17 61V35h16v10h19V31M33 41h8m-8 4h8m11-13v11m-9 2v15h11V49" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="51" cy="47" r="3" stroke="currentColor" stroke-width="2"/></svg>
-        </span>
-        <span class="brand-words">Facture<br>Facile</span>
-      </a>
-      <p class="brand-tagline" id="brandtagline">Des factures qui coulent de source</p>
-      <nav aria-label="Navigation principale">
-        <a href="#home" data-nav="home"><span class="nav-icon" aria-hidden="true">⌂</span><span>Accueil</span></a>
-        <a href="#docs" data-nav="docs" data-filter="facture" onclick="filter='facture';render()"><span class="nav-icon" aria-hidden="true">▤</span><span>Factures</span></a>
-        <a href="#docs" data-nav="docs" data-filter="devis" onclick="filter='devis';render()"><span class="nav-icon" aria-hidden="true">▤</span><span>Devis</span></a>
-        <a href="#clients" data-nav="clients"><span class="nav-icon" aria-hidden="true">♙</span><span>Clients</span></a>
-        <a href="#payments" data-nav="payments"><span class="nav-icon" aria-hidden="true">▱</span><span>Paiements</span></a>
-      </nav>
-      <div class="side-help"><span class="help-icon">?</span><strong>Un pas à la fois.</strong><p>Vous pouvez revenir en arrière à chaque étape.</p><button class="link" id="help">Comment ça marche ?</button></div>
-      <div class="side-foot"><strong>Du temps<br>pour votre métier</strong><span class="side-foot-rule" aria-hidden="true"></span><span class="side-foot-symbol" aria-hidden="true">⚒</span><span id="sidefoottrades">Plomberie<br>Chauffage<br>Confiance au quotidien</span></div>
-    </aside>
-    <div class="workspace">
-      <header>
-        <span id="headerdate" class="header-date"></span>
-        <div class="header-actions">
-          <button class="quiet" id="themebutton" hidden>Thème <span class="theme-current" id="themelabel">Plomberie &amp; chauffage</span></button>
-          <button class="quiet" id="textsize" aria-label="Agrandir le texte">A+ <span>Agrandir le texte</span></button>
-          <a href="#company" class="company-link">Mon entreprise</a>
-          <span class="avatar" aria-hidden="true">F.</span>
-          <span class="account-name" id="accountname">Mon compte</span>
-          <button class="quiet" id="logout" hidden>Déconnexion</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Facture Facile · Devis et factures</title>
+    <meta
+      name="description"
+      content="Vos devis et factures, étape par étape."
+    />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23194739'/%3E%3Cpath d='M10 8h13v4h-9v4h7v4h-7v6h-4z' fill='white'/%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css?v=suivi-20260925" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Aller au contenu</a>
+    <div class="layout">
+      <aside>
+        <a class="brand" href="#home" aria-label="Facture Facile, accueil">
+          <span class="brand-symbol" aria-hidden="true">
+            <svg viewBox="0 0 74 76" fill="none">
+              <path
+                d="M5 30 37 6l32 24v40H5V30Z"
+                stroke="currentColor"
+                stroke-width="2.4"
+              />
+              <path
+                d="M17 61V35h16v10h19V31M33 41h8m-8 4h8m11-13v11m-9 2v15h11V49"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <circle
+                cx="51"
+                cy="47"
+                r="3"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </span>
+          <span class="brand-words">Facture<br />Facile</span>
+        </a>
+        <p class="brand-tagline" id="brandtagline">
+          Des factures qui coulent de source
+        </p>
+        <nav aria-label="Navigation principale">
+          <a href="#home" data-nav="home"
+            ><span class="nav-icon" aria-hidden="true">⌂</span
+            ><span>Accueil</span></a
+          >
+          <a
+            href="#docs"
+            data-nav="docs"
+            data-filter="facture"
+            onclick="
+              filter = 'facture';
+              render();
+            "
+            ><span class="nav-icon" aria-hidden="true">▤</span
+            ><span>Factures</span></a
+          >
+          <a
+            href="#docs"
+            data-nav="docs"
+            data-filter="devis"
+            onclick="
+              filter = 'devis';
+              render();
+            "
+            ><span class="nav-icon" aria-hidden="true">▤</span
+            ><span>Devis</span></a
+          >
+          <a href="#clients" data-nav="clients"
+            ><span class="nav-icon" aria-hidden="true">♙</span
+            ><span>Clients</span></a
+          >
+          <a href="#recurring" data-nav="recurring"
+            ><span class="nav-icon" aria-hidden="true">↻</span
+            ><span>Abonnements</span></a
+          >
+          <a href="#payments" data-nav="payments"
+            ><span class="nav-icon" aria-hidden="true">▱</span
+            ><span>Paiements</span></a
+          >
+        </nav>
+        <div class="side-help">
+          <span class="help-icon">?</span><strong>Un pas à la fois.</strong>
+          <p>Vous pouvez revenir en arrière à chaque étape.</p>
+          <button class="link" id="help">Comment ça marche ?</button>
         </div>
-      </header>
-      <main id="main" tabindex="-1"></main>
+        <div class="side-foot">
+          <strong>Du temps<br />pour votre métier</strong
+          ><span class="side-foot-rule" aria-hidden="true"></span
+          ><span class="side-foot-symbol" aria-hidden="true">⚒</span
+          ><span id="sidefoottrades"
+            >Plomberie<br />Chauffage<br />Confiance au quotidien</span
+          >
+        </div>
+      </aside>
+      <div class="workspace">
+        <header>
+          <span id="headerdate" class="header-date"></span>
+          <div class="header-actions">
+            <button class="quiet" id="themebutton" hidden>
+              Thème
+              <span class="theme-current" id="themelabel"
+                >Plomberie &amp; chauffage</span
+              >
+            </button>
+            <button class="quiet" id="textsize" aria-label="Agrandir le texte">
+              A+ <span>Agrandir le texte</span>
+            </button>
+            <a href="#company" class="company-link">Mon entreprise</a>
+            <span class="avatar" aria-hidden="true">F.</span>
+            <span class="account-name" id="accountname">Mon compte</span>
+            <button class="quiet" id="logout" hidden>Déconnexion</button>
+          </div>
+        </header>
+        <main id="main" tabindex="-1"></main>
+      </div>
     </div>
-  </div>
-  <div id="toast" role="status"></div>
-  <dialog id="helpdialog">
-    <h2>Faisons simple.</h2>
-    <p>1. Choisissez « Créer une facture » ou « Créer un devis ».</p>
-    <p>2. Sélectionnez votre client, puis ajoutez les travaux.</p>
-    <p>3. Vérifiez et enregistrez votre document.</p>
-    <p>Pour obtenir un PDF, ouvrez le document, puis choisissez « Imprimer / PDF ».</p>
-    <p class="muted">Les données sont enregistrées dans votre compte. Aucun envoi e-mail ni connexion Peppol n’est activé.</p>
-    <button class="primary" onclick="this.closest('dialog').close()">J’ai compris</button>
-  </dialog>
-  <dialog id="themedialog" aria-labelledby="themeheading">
-    <h2 id="themeheading">Choisissez votre métier</h2>
-    <p>Le thème plomberie &amp; chauffage est celui d’origine.</p>
-    <div class="theme-options">
-      <button class="theme-option" data-theme="plombier" onclick="chooseTheme('plombier')"><span>♨</span><strong>Plomberie &amp; chauffage</strong><small>Thème d’origine · Radiateur</small></button>
-      <button class="theme-option" data-theme="jardinier" onclick="chooseTheme('jardinier')"><span>❧</span><strong>Jardinage</strong><small>Tronçonneuse</small></button>
-      <button class="theme-option" data-theme="electricien" onclick="chooseTheme('electricien')"><span>⚡</span><strong>Électricité</strong><small>Interrupteur et ampoule</small></button>
-      <button class="theme-option" data-theme="peintre" onclick="chooseTheme('peintre')"><span>▨</span><strong>Peinture</strong><small>Rouleau de peinture</small></button>
-      <button class="theme-option" data-theme="menuisier" onclick="chooseTheme('menuisier')"><span>⌁</span><strong>Menuiserie</strong><small>Rabot et copeaux</small></button>
-    </div>
-    <button type="button" onclick="this.closest('dialog').close()">Fermer</button>
-  </dialog>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="config.js"></script>
-  <script src="app.js?v=themes-metiers-8"></script>
-</body>
+    <div id="toast" role="status"></div>
+    <dialog id="helpdialog">
+      <h2>Faisons simple.</h2>
+      <p>1. Choisissez « Créer une facture » ou « Créer un devis ».</p>
+      <p>2. Sélectionnez votre client, puis ajoutez les travaux.</p>
+      <p>3. Vérifiez et enregistrez votre document.</p>
+      <p>
+        Pour obtenir un PDF, ouvrez le document, puis choisissez « Imprimer /
+        PDF ».
+      </p>
+      <p class="muted">
+        Les données sont enregistrées dans votre compte. Aucun envoi e-mail ni
+        connexion Peppol n’est activé.
+      </p>
+      <button class="primary" onclick="this.closest('dialog').close()">
+        J’ai compris
+      </button>
+    </dialog>
+    <dialog id="themedialog" aria-labelledby="themeheading">
+      <h2 id="themeheading">Choisissez votre métier</h2>
+      <p>Le thème plomberie &amp; chauffage est celui d’origine.</p>
+      <div class="theme-options">
+        <button
+          class="theme-option"
+          data-theme="plombier"
+          onclick="chooseTheme('plombier')"
+        >
+          <span>♨</span><strong>Plomberie &amp; chauffage</strong
+          ><small>Thème d’origine · Radiateur</small>
+        </button>
+        <button
+          class="theme-option"
+          data-theme="jardinier"
+          onclick="chooseTheme('jardinier')"
+        >
+          <span>❧</span><strong>Jardinage</strong><small>Tronçonneuse</small>
+        </button>
+        <button
+          class="theme-option"
+          data-theme="electricien"
+          onclick="chooseTheme('electricien')"
+        >
+          <span>⚡</span><strong>Électricité</strong
+          ><small>Interrupteur et ampoule</small>
+        </button>
+        <button
+          class="theme-option"
+          data-theme="peintre"
+          onclick="chooseTheme('peintre')"
+        >
+          <span>▨</span><strong>Peinture</strong
+          ><small>Rouleau de peinture</small>
+        </button>
+        <button
+          class="theme-option"
+          data-theme="menuisier"
+          onclick="chooseTheme('menuisier')"
+        >
+          <span>⌁</span><strong>Menuiserie</strong
+          ><small>Rabot et copeaux</small>
+        </button>
+      </div>
+      <button type="button" onclick="this.closest('dialog').close()">
+        Fermer
+      </button>
+    </dialog>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+    <script src="config.js"></script>
+    <script src="vendor/qrcode.js"></script>
+    <script src="vendor/qrcode_UTF8.js"></script>
+    <script src="app.js?v=suivi-20260925"></script>
+  </body>
 </html>
