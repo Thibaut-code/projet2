@@ -3,10 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,follow" />
     <title>Facture Facile · Devis et factures</title>
     <meta
       name="description"
-      content="Vos devis et factures, étape par étape."
+      content="Créez vos devis et factures en ligne. Gérez clients, prestations, abonnements et paiements avec Facture Facile, pour artisans et indépendants."
     />
     <link
       rel="icon"
@@ -19,9 +20,10 @@
       href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=suivi-20260925" />
+    <link rel="stylesheet" href="style.css?v=sepa-20260927" />
   </head>
   <body>
+    <a href="accueil.html" class="no-print" style="display:block;text-align:center;padding:6px">Découvrir Facture Facile</a>
     <a class="skip" href="#main">Aller au contenu</a>
     <div class="layout">
       <aside>
@@ -126,7 +128,7 @@
             <button class="quiet" id="logout" hidden>Déconnexion</button>
           </div>
         </header>
-        <main id="main" tabindex="-1"></main>
+        <main id="main" tabindex="-1"><h1>Facture Facile : devis et factures pour indépendants</h1><p>Créez vos devis et factures, gérez vos clients et suivez vos paiements. Dix thèmes métiers et cinq modèles personnalisables.</p><noscript>Activez JavaScript pour vous connecter à votre espace de facturation.</noscript></main>
       </div>
     </div>
     <div id="toast" role="status"></div>
@@ -140,8 +142,7 @@
         PDF ».
       </p>
       <p class="muted">
-        Les données sont enregistrées dans votre compte. Aucun envoi e-mail ni
-        connexion Peppol n’est activé.
+        Les données sont enregistrées dans votre compte. L’envoi e-mail utilise votre messagerie et demande confirmation. Le QR de virement SEPA utilise votre application bancaire compatible. Peppol test nécessite la configuration du service associé.
       </p>
       <button class="primary" onclick="this.closest('dialog').close()">
         J’ai compris
@@ -199,6 +200,6 @@
     <script src="config.js"></script>
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/qrcode_UTF8.js"></script>
-    <script src="app.js?v=suivi-20260925"></script>
+    <script src="app.js?v=sepa-20260927"></script>
   </body>
 </html>

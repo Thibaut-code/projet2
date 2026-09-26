@@ -2451,3 +2451,40 @@ main {
     break-inside: avoid;
   }
 }
+/* Mise à jour : dix métiers, modèles et totaux compacts */
+.total {margin-top:16px; max-width:330px;}
+.total > div {padding:0; margin:0 0 5px; gap:20px; line-height:1.3;}
+.total > .grand {margin:8px 0 0; padding-top:8px; font-size:1.15rem;}
+.document-heading {display:flex; justify-content:space-between; align-items:center; gap:20px; min-height:48px; margin-bottom:12px;}
+.document-heading h2 {margin:0 0 0 auto; color:var(--invoice-accent);}
+.document-top {align-items:baseline;}
+.document-top > div:last-child {text-align:right;}
+.document-top strong {display:block; line-height:1.4;}
+.document-heading .company-logo {margin:0; max-height:60px; width:auto;}
+.document.font-serif {font-family:Georgia,serif;}
+.template-moderne {border-top:8px solid var(--invoice-accent);}
+.template-moderne th {background:var(--invoice-accent); color:white;}
+.template-minimal {border:0; border-radius:0;}
+.template-minimal th {background:white; border-bottom:2px solid var(--invoice-accent);}
+.template-elegant {border-left:5px solid var(--invoice-accent); font-family:Georgia,serif;}
+.template-elegant h2 {letter-spacing:.15em;}
+.template-compact {padding:24px; font-size:.88rem;}
+.template-compact td,.template-compact th {padding:6px;}
+.template-compact p {margin:8px 0;}
+.template-compact table {margin-top:12px;}
+.wide-dialog {width:min(1250px,96vw); max-width:96vw; max-height:94vh; overflow:auto;}
+.template-editor {display:grid; grid-template-columns:230px minmax(0,1fr); gap:24px;}
+#template-preview {background:#edf0f2; padding:16px; overflow:auto;}
+#template-preview .document {min-width:550px;}
+.client-note {white-space:pre-wrap; border-left:3px solid var(--green); padding-left:12px;}
+html[data-theme="it"] {--green:#203c70; --accent:#627ad2;}
+html[data-theme="nettoyage"] {--green:#246a77; --accent:#67b9c5;}
+html[data-theme="mecanicien"] {--green:#4b4f58; --accent:#bd753e;}
+html[data-theme="photographe"] {--green:#62416f; --accent:#b27daa;}
+html[data-theme="consultant"] {--green:#264d68; --accent:#709ba9;}
+@media(max-width:800px){.template-editor{grid-template-columns:1fr;} .document-top{gap:12px;} .document-heading h2{font-size:1.4rem;}}
+@media print {dialog,dialog[open],.no-print{display:none!important;} .document-top{display:flex; flex-direction:row; align-items:baseline;} .document{max-width:none;} .template-moderne th{print-color-adjust:exact;} }
+
+:root[data-theme] .document.template-moderne th {background:var(--invoice-accent);color:white;}
+:root[data-theme] .document.template-minimal th {background:white;}
+html[data-theme="it"],html[data-theme="nettoyage"],html[data-theme="mecanicien"],html[data-theme="photographe"],html[data-theme="consultant"] {--green-dark:#182635;--tint-1:#f0f2f8;--tint-2:#edf2f5;--tint-3:#f6f3ed;}
