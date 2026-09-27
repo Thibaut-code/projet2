@@ -395,7 +395,7 @@ async function saveDraft() {
 function baseDocumentHTML(d) {
   const c = d.customer || client(d),
     biz = documentBusiness(d);
-  return `<article class="document"><div class="document-heading">${logoHTML(biz.logo, biz.logo_shape)}<h2>${d.type === "devis" ? "DEVIS" : "FACTURE"}</h2></div><div class="document-top"><div><strong>${esc(biz.name)}</strong><p class="muted">${esc(biz.address)}<br>${esc(biz.vat)}</p></div><div><strong>${esc(d.id)}</strong><p>Date : ${fmt(d.date)}<br>${d.type === "devis" ? "Valable jusqu’au" : "Échéance"} : ${fmt(d.due)}</p></div></div><hr style="border:0;border-top:1px solid var(--line)"><p class="document-client"><small class="muted">CLIENT</small><br><strong>${esc(c.name)}</strong><br>${esc(c.address)}</p><h3>${esc(d.job)}</h3>${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ""}<table><thead><tr><th>Prestation</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty * l.price))}</td></tr>`).join("")}</tbody></table>${totalBlock(d)}<p style="margin-top:25px">Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p>${paymentQR(d, biz)}<div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal" style="font-size:.8rem;margin-top:15px">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
+  return `<article class="document">${documentHeader(d)}${d.job ? `<h3 class="invoice-job">Objet : ${esc(d.job)}</h3>` : ""}${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ""}<table><thead><tr><th>Prestation</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty * l.price))}</td></tr>`).join("")}</tbody></table>${totalBlock(d)}<p style="margin-top:25px">Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p>${paymentQR(d, biz)}<div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal" style="font-size:.8rem;margin-top:15px">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
 }
 function view(id) {
   const d = docs.find((d) => d.id === id);
@@ -1345,7 +1345,7 @@ function render() {
 
 
 const DEFAULT_APPEARANCE = {template:"classique", color:"#194739", font:"sans"};
-const TEMPLATES = {classique:"1 · Original", bleu_nuit:"2 · Bleu nuit"};
+const TEMPLATES = {classique:"1 · Original", bleu_nuit:"2 · Bleu nuit", cuivre:"3 · ORBYT — Noir et cuivre"};
 let appearanceDraft = null;
 let appearanceTarget = null;
 function publicCustomer(c) {
@@ -1362,9 +1362,19 @@ function clientExtraFields(c) {
 function readClientExtras(form) {
   return Object.fromEntries(["note","vat","peppol_id","street","postal_code","city","country"].map(k => [k, String(form.get(k) || '').trim()]));
 }
+const TEMPLATE_COLORS = {classique:'#194739',bleu_nuit:'#0b304e',cuivre:'#a45f36'};
 function cleanAppearance(a = {}) {
-  const template = a?.template === 'bleu_nuit' ? 'bleu_nuit' : 'classique';
-  return {template, color:template === 'bleu_nuit' ? '#0b304e' : '#194739', font:'sans'};
+  const template = Object.hasOwn(TEMPLATES,a?.template) ? a.template : 'classique';
+  const color = /^#[0-9a-f]{6}$/i.test(a?.color) ? a.color : TEMPLATE_COLORS[template];
+  return {template,color,font:'sans'};
+}
+function accentText(color) {
+  const rgb=color.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=0.04045?x/12.92:((x+0.055)/1.055)**2.4);
+  return rgb[0]*0.2126+rgb[1]*0.7152+rgb[2]*0.0722 > 0.179 ? '#171717' : '#ffffff';
+}
+function documentHeader(d) {
+  const c=d.customer || client(d),biz=documentBusiness(d);
+  return `<div class="document-heading">${logoHTML(biz.logo,biz.logo_shape)}<div class="invoice-title"><h2>${d.type==='devis'?'DEVIS':'FACTURE'}</h2><div>${esc(d.id)}</div></div></div><div class="invoice-parties"><div><h3 class="party-heading">${esc(biz.name)}</h3><p>${esc(biz.address)}${biz.vat?'<br>'+esc(biz.vat):''}</p></div><div class="invoice-buyer"><h3 class="party-heading">CLIENT</h3><p><strong>${esc(c.name)}</strong><br>${esc(c.address)}${c.vat?'<br>'+esc(c.vat):''}</p><p class="invoice-dates">Date : ${fmt(d.date)}<br>${d.type==='devis'?'Valable jusqu’au':'Échéance'} : ${fmt(d.due)}</p></div></div>`;
 }
 function documentBusiness(d) {
   const biz = d.issuer || company;
@@ -1374,12 +1384,12 @@ function documentBusiness(d) {
 }
 function navyDocumentHTML(d) {
   const c = d.customer || client(d), biz = documentBusiness(d);
-  return `<article class="document"><div class="document-heading">${logoHTML(biz.logo,biz.logo_shape)}<div class="invoice-title"><h2>${d.type === 'devis' ? 'DEVIS' : 'FACTURE'}</h2><div>${esc(d.id)}</div></div></div><div class="invoice-parties"><div><h3 class="party-heading">${esc(biz.name)}</h3><p>${esc(biz.address)}${biz.vat ? '<br>'+esc(biz.vat) : ''}</p></div><div class="invoice-buyer"><h3 class="party-heading">CLIENT</h3><p><strong>${esc(c.name)}</strong><br>${esc(c.address)}${c.vat ? '<br>'+esc(c.vat) : ''}</p></div></div><p class="invoice-dates">Date : ${fmt(d.date)}<br>${d.type === 'devis' ? 'Valable jusqu’au' : 'Échéance'} : ${fmt(d.due)}</p>${d.job ? `<h3 class="invoice-job">${esc(d.job)}</h3>` : ''}${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ''}<table><thead><tr><th>Description</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map(l=>`<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty*l.price))}</td></tr>`).join('')}</tbody></table>${totalBlock(d)}<div class="invoice-payment">${paymentQR(d,biz)}<p>Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p></div><div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
+  return `<article class="document">${documentHeader(d)}${d.job ? `<h3 class="invoice-job">Objet : ${esc(d.job)}</h3>` : ''}${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ''}<table><thead><tr><th>Description</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map(l=>`<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty*l.price))}</td></tr>`).join('')}</tbody></table>${totalBlock(d)}<div class="invoice-payment">${paymentQR(d,biz)}<p>Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p></div><div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
 }
 function documentHTML(d) {
   const a = cleanAppearance(d.appearance || company.appearance || DEFAULT_APPEARANCE);
-  const html = a.template === 'bleu_nuit' ? navyDocumentHTML(d) : baseDocumentHTML(d);
-  return html.replace('class="document"', `class="document template-${a.template} font-sans" style="--invoice-accent:${a.color}"`);
+  const html = a.template !== 'classique' ? navyDocumentHTML(d) : baseDocumentHTML(d);
+  return html.replace('class="document"', `class="document template-${a.template}${a.template === 'cuivre' ? ' template-bleu_nuit' : ''} font-sans" style="--invoice-accent:${a.color};--invoice-on-accent:${accentText(a.color)}"`);
 }
 function documentActions(d) {
   return `<section class="no-print panel"><div class="filter-row"><strong>${d.sentAt ? 'Envoyé le ' + new Date(d.sentAt).toLocaleString('fr-BE') : 'Enregistré'}</strong><button onclick="sendDocument('${d.id}')">${d.sentAt ? 'Renvoyer par e-mail' : 'Envoyer par e-mail'}</button><button onclick="customizeDocument('${d.id}')">Modèle et aperçu</button>${!d.sentAt && !d.paid && !d.peppol ? `<button onclick="editDocument('${d.id}')">Modifier le contenu</button>${d.type === 'facture' ? `<button class="danger-button" onclick="deleteInvoice('${d.id}')">Supprimer la facture</button>` : ''}` : ''}${d.type === 'facture' ? `<button onclick="sendPeppolTest('${d.id}')">Peppol · test</button>` : ''}</div>${d.peppol ? `<p>Peppol test : demande enregistrée auprès du fournisseur. Vérifiez la livraison dans son tableau de bord.</p>` : ''}<div id="action-error" class="application-error" role="alert"></div></section>`;
@@ -1413,17 +1423,17 @@ function customizeDocument(id) {
   const d = id ? docs.find(x => x.id === id) : draft;
   if (!d) return;
   appearanceDraft = cleanAppearance(d.appearance || company.appearance || DEFAULT_APPEARANCE);
-  const dialog = featureDialog('Personnaliser le document', `<div class="template-editor"><div><label class="field">Modèle<select id="template-choice" onchange="updateAppearance('template',this.value)">${Object.entries(TEMPLATES).map(([key,label]) => `<option value="${key}" ${appearanceDraft.template === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label><button onclick="resetAppearance()">Retour au modèle par défaut</button><label class="field"><span><input id="default-appearance" type="checkbox"> Utiliser aussi pour mes prochains documents</span></label><button class="primary" onclick="saveAppearance()">Enregistrer le modèle</button></div><div id="template-preview" aria-live="polite"></div></div>`);
+  const dialog = featureDialog('Personnaliser le document', `<div class="template-editor"><div><label class="field">Modèle<select id="template-choice" onchange="updateAppearance('template',this.value)">${Object.entries(TEMPLATES).map(([key,label]) => `<option value="${key}" ${appearanceDraft.template === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label><label class="field">Couleur du document<input id="template-color" type="color" value="${appearanceDraft.color}" oninput="updateAppearance('color',this.value)"></label><button onclick="resetAppearance()">Retour au modèle par défaut</button><label class="field"><span><input id="default-appearance" type="checkbox"> Utiliser aussi pour mes prochains documents</span></label><button class="primary" onclick="saveAppearance()">Enregistrer le modèle</button></div><div id="template-preview" aria-live="polite"></div></div>`);
   dialog.classList.add('wide-dialog'); drawAppearance();
 }
 function drawAppearance() {
   const d = appearanceTarget ? docs.find(x => x.id === appearanceTarget) : draft;
   $('#template-preview').innerHTML = documentHTML({...d, id:d.id || 'Aperçu · numéro à attribuer', appearance:appearanceDraft});
 }
-function updateAppearance(k,v) { appearanceDraft[k]=v; drawAppearance(); }
+function updateAppearance(k,v) { appearanceDraft[k]=v; if(k==='template'){appearanceDraft.color=TEMPLATE_COLORS[v];$('#template-color').value=appearanceDraft.color;} drawAppearance(); }
 function resetAppearance() {
   appearanceDraft = {...DEFAULT_APPEARANCE};
-  $('#template-choice').value=appearanceDraft.template; drawAppearance();
+  $('#template-choice').value=appearanceDraft.template; $('#template-color').value=appearanceDraft.color; drawAppearance();
 }
 async function saveAppearance() {
   if (featureBusy) return; featureBusy=true;
