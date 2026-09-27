@@ -441,17 +441,25 @@ async function togglePaid(id) {
   busy = true;
   try {
     const paid = !d.paid;
+    const paidAt = paid ? prompt("Date réelle du paiement (AAAA-MM-JJ)", today()) : null;
+    if (paid && paidAt === null) return;
+    if (paid && (!validDate(paidAt) || paidAt > today() || paidAt < d.date)) {
+      toast("Indiquez une date valide, entre la date de facture et aujourd’hui.");
+      return;
+    }
     const { error } = await db
       .from("documents")
-      .update({ paid })
+      .update({ paid, paid_at: paidAt })
       .eq("id", d.dbId)
       .eq("user_id", account.id);
     if (error) throw error;
     d.paid = paid;
+    d.paidAt = paidAt;
     render();
     toast(paid ? "Paiement noté." : "Paiement annulé.");
   } catch (error) {
-    showError(error);
+    if (["42703", "PGRST204"].includes(error.code)) toast("Exécutez dashboard.sql dans Supabase avant d’enregistrer le paiement.");
+    else showError(error);
   } finally {
     busy = false;
   }
@@ -719,6 +727,7 @@ function readDocument(row, lines) {
     site: row.site,
     recurrence: row.recurrence || null,
     paid: row.paid,
+    paidAt: row.paid_at || null,
     convertedFrom: row.converted_from,
     issuer: row.issuer_snapshot,
     customer: row.customer_snapshot,
@@ -1273,6 +1282,8 @@ function render() {
   originalRender();
   if (account && location.hash === "#recurring")
     $("#main").innerHTML = recurringView();
+  if (account && location.hash === "#dashboard")
+    $("#main").innerHTML = dashboard();
 }
 
 
@@ -1442,3 +1453,119 @@ for (const key of ['it','nettoyage','mecanicien','photographe','consultant']) {
   button.onclick=()=>chooseTheme(key); $('#themedialog .theme-options').append(button);
 }
 initialize();
+
+// --- Dashboard activité -----------------------------------------------------
+// Dashboard: CA HT; créances et règlements TTC. Aucun envoi automatique.
+let dashboardPeriod = '12months', dashboardCustomStart = '', dashboardCustomEnd = '';
+const dashDay = 86400000;
+function dashDate(s) { if (!s) return null; const d = new Date(String(s).slice(0,10)+'T12:00:00'); return Number.isNaN(+d) ? null : d; }
+function dashISO(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dashShift(d,n) { return new Date(d.getFullYear(),d.getMonth()+n,Math.min(d.getDate(),new Date(d.getFullYear(),d.getMonth()+n+1,0).getDate()),12); }
+function dashRange() {
+  const end=dashDate(today()); let start=new Date(end.getFullYear(),end.getMonth(),1,12);
+  if(dashboardPeriod==='30days') start=new Date(+end-29*dashDay);
+  if(/^(3|6|12)months$/.test(dashboardPeriod)) start=new Date(end.getFullYear(),end.getMonth()-parseInt(dashboardPeriod)+1,1,12);
+  if(dashboardPeriod==='year') start=new Date(end.getFullYear(),0,1,12);
+  if(dashboardPeriod==='custom') return {start:dashDate(dashboardCustomStart),end:dashDate(dashboardCustomEnd)};
+  return {start,end};
+}
+function dashWithin(d,a,b,key='date') { const v=dashDate(d[key]); return v && v>=a && v<=b; }
+function dashSum(a,key='net') { return round(a.reduce((s,d)=>s+totals(d)[key],0)); }
+function dashPct(a,b) { return b>0 ? (a-b)/b*100 : null; }
+function dashTrend(a,b) { const p=dashPct(a,b); return p===null?'Comparaison indisponible':`${p>=0?'↗ +':'↘ '}${p.toLocaleString('fr-BE',{maximumFractionDigits:1})} %`; }
+function dashInvoices() { return docs.filter(d=>d.type==='facture'); }
+function dashProducts(list) {
+  const map=new Map(); list.forEach(d=>(d.lines||[]).forEach(l=>{
+    const name=(l.name||'Prestation').trim(), key=name.toLocaleLowerCase('fr');
+    const p=map.get(key)||{key,name,total:0,qty:0}; p.total+=round(Number(l.qty)*Number(l.price)); p.qty+=Number(l.qty); map.set(key,p);
+  })); return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function dashClients(list) {
+  const map=new Map(); list.forEach(d=>{const key=d.client||d.dbId, c=map.get(key)||{key,name:client(d).name,total:0,count:0}; c.total+=totals(d).net;c.count++;map.set(key,c);});
+  return [...map.values()].sort((a,b)=>b.total-a.total);
+}
+function dashPaymentStats(list) {
+  const known=list.filter(d=>d.paid&&dashDate(d.paidAt)&&dashDate(d.date)&&d.paidAt>=d.date);
+  const avg=a=>a.length?a.reduce((s,d)=>s+Math.round((dashDate(d.paidAt)-dashDate(d.date))/dashDay),0)/a.length:null;
+  const groups=dashClients(known).map(c=>({...c,days:avg(known.filter(d=>d.client===c.key))})).filter(c=>c.days!==null).sort((a,b)=>a.days-b.days);
+  return {known,average:avg(known),groups};
+}
+function dashTable(headers,rs) { return `<div class="dash-scroll"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rs.length?rs.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join(''):`<tr><td colspan="${headers.length}">Aucune donnée sur cette période.</td></tr>`}</tbody></table></div>`; }
+function dashOpenDocs(title,list) {
+  const dialog=featureDialog(title,dashTable(['Facture / client','Date','HT','TTC','Actions'],list.map((d,i)=>[
+    `${esc(d.id)}<br>${esc(client(d).name)}`,esc(d.date),euro(totals(d).net),euro(totals(d).total),`<button data-open="${i}">Ouvrir</button>${!d.paid&&d.due&&d.due<today()?` <button data-remind="${i}">Relancer</button>`:''}${d.paid&&!d.paidAt?` <button data-date="${i}">Date de paiement</button>`:''}`])));
+  dialog.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{dialog.close();go('view/'+list[+b.dataset.open].id);});
+  dialog.querySelectorAll('[data-remind]').forEach(b=>b.onclick=()=>remindClient(list[+b.dataset.remind].id));
+  dialog.querySelectorAll('[data-date]').forEach(b=>b.onclick=()=>dashSetPaymentDate(list[+b.dataset.date]));
+}
+async function dashSetPaymentDate(d) {
+  if(busy)return;const value=prompt('Date réelle du paiement (AAAA-MM-JJ)',today());if(value===null)return;
+  if(!validDate(value)||value>today()||value<d.date)return toast('Date de paiement invalide.');
+  busy=true;try {const {error}=await db.from('documents').update({paid_at:value}).eq('id',d.dbId).eq('user_id',account.id);if(error)throw error;d.paidAt=value;$('#feature-dialog')?.close();render();}catch(e){if(['42703','PGRST204'].includes(e.code))toast('Exécutez dashboard.sql dans Supabase pour enregistrer les dates de paiement.');else showError(e);}finally{busy=false;}
+}
+function dashKpi(kind) {
+  const all=dashInvoices(),now=dashDate(today()),m=new Date(now.getFullYear(),now.getMonth(),1,12),y=new Date(now.getFullYear(),0,1,12);
+  const list=kind==='unpaid'?all.filter(d=>!d.paid):kind==='late'?all.filter(d=>!d.paid&&d.due&&d.due<today()):all.filter(d=>dashWithin(d,kind==='year'?y:m,now));
+  if(kind==='average')return featureDialog('Panier moyen HT · ce mois',dashTable(['Client','Factures','Panier moyen HT'],dashClients(list).map(c=>[esc(c.name),c.count,euro(c.total/c.count)])));
+  dashOpenDocs({month:'CA du mois · factures',unpaid:'Factures à encaisser',late:'Factures en retard',year:'CA de l’année · factures'}[kind],list);
+}
+function dashBuckets(start,end) {
+  const daily=(end-start)/dashDay<=40, result=[];
+  for(let d=new Date(start);d<=end;d=daily?new Date(+d+dashDay):new Date(d.getFullYear(),d.getMonth()+1,1,12)) {
+    const stop=daily?new Date(d):new Date(Math.min(+end,+new Date(d.getFullYear(),d.getMonth()+1,0,12)));
+    result.push({start:new Date(d),end:stop,label:d.toLocaleDateString('fr-BE',daily?{day:'numeric',month:'short'}:{month:'short',year:'2-digit'})});
+  }return result;
+}
+function dashBucketDetail(start,end) {
+  const all=dashInvoices(),a=dashDate(start),b=dashDate(end),list=all.filter(d=>dashWithin(d,a,b)),received=all.filter(d=>d.paid&&dashWithin(d,a,b,'paidAt'));
+  const newClients=new Set(list.filter(d=>d.client&&!all.some(x=>x.client===d.client&&x.date<start)).map(d=>d.client)).size;
+  featureDialog(`${fmt(start)} — ${fmt(end)}`,`<p>Facturé HT : <strong>${euro(dashSum(list))}</strong> · Encaissé TTC daté : <strong>${euro(dashSum(received,'total'))}</strong></p><p>${list.length} facture(s) · Panier moyen HT : ${euro(list.length?dashSum(list)/list.length:0)} · ${newClients} client(s) facturé(s) pour la première fois</p>${dashTable(['Facture','Client','HT'],list.map(d=>[esc(d.id),esc(client(d).name),euro(totals(d).net)]))}`);
+}
+function dashRecurring(all) {
+  const list=all.filter(d=>d.recurrence&&dashDate(d.recurrence.next)&&['monthly','quarterly','yearly'].includes(d.recurrence.frequency));
+  const now=dashDate(today()),start=new Date(now.getFullYear(),now.getMonth()+1,1,12),end=new Date(now.getFullYear(),now.getMonth()+2,0,12);
+  let planned=0;list.forEach(d=>{let r={...d.recurrence};for(let i=0;i<2400&&dashDate(r.next)<=end;i++){if(dashDate(r.next)>=start)planned+=totals(d).net; r={...r,next:advanceDate(r)};}});
+  return {list:list.sort((a,b)=>a.recurrence.next.localeCompare(b.recurrence.next)),monthly:list.reduce((s,d)=>s+totals(d).net/({monthly:1,quarterly:3,yearly:12}[d.recurrence.frequency]),0),planned};
+}
+function dashPaymentChanges(all,start,end) {
+  const current=dashPaymentStats(all.filter(d=>dashWithin(d,start,end,'paidAt')));
+  const days=Math.round((end-start)/dashDay)+1, previousEnd=new Date(+start-dashDay), previousStart=new Date(+start-days*dashDay);
+  const previous=dashPaymentStats(all.filter(d=>dashWithin(d,previousStart,previousEnd,'paidAt')));
+  return {current,previous,slower:current.groups.map(c=>({...c,before:previous.groups.find(p=>p.key===c.key)})).filter(c=>c.before&&c.days>c.before.days)};
+}
+function dashAnalysis() {
+  const {start,end}=dashRange();if(!start||!end||start>end)return;
+  const all=dashInvoices(),list=all.filter(d=>dashWithin(d,start,end)),prev=all.filter(d=>dashWithin(d,dashShift(start,-12),dashShift(end,-12))),cs=dashClients(list),ps=dashProducts(list),sum=dashSum(list),late=all.filter(d=>!d.paid&&d.due&&d.due<today()),stats=dashPaymentStats(list);
+  featureDialog('Analyse de mon activité',`<p>${fmt(dashISO(start))} — ${fmt(dashISO(end))}</p><ul class="dash-summary"><li>Vous avez facturé <strong>${euro(sum)} HT</strong> sur ${list.length} facture(s). ${dashTrend(sum,dashSum(prev))} par rapport aux mêmes dates l’année précédente.</li>${ps[0]&&sum?`<li>Votre première prestation, <strong>${esc(ps[0].name)}</strong>, représente ${Math.round(ps[0].total/sum*100)} % du CA.</li>`:''}${cs[0]&&sum?`<li>Votre premier client, <strong>${esc(cs[0].name)}</strong>, représente ${Math.round(cs[0].total/sum*100)} % du CA.</li>`:''}<li>${late.length} facture(s) échue(s) : <strong>${euro(dashSum(late,'total'))} TTC</strong>, dont ${euro(dashSum(late.filter(d=>(dashDate(today())-dashDate(d.due))/dashDay>30),'total'))} depuis plus de 30 jours.</li><li>${stats.average===null?'Délai de paiement indisponible : aucune date connue.':`Délai moyen : ${stats.average.toFixed(1)} jours sur ${stats.known.length} facture(s) payée(s) datée(s) de la période.`}</li></ul><p class="muted">Observations calculées à partir de vos données, sans IA et sans prévision de ventes.</p>`);
+}
+function dashboard() {
+  const all=dashInvoices(),now=dashDate(today()),{start,end}=dashRange();
+  const filters=`<div class="dash-period">${[['month','Ce mois'],['30days','30 jours'],['3months','3 mois'],['6months','6 mois'],['12months','12 mois'],['year','Année'],['custom','Personnalisé']].map(([v,l])=>`<button class="${dashboardPeriod===v?'active':''}" onclick="dashboardPeriod='${v}';render()">${l}</button>`).join('')}</div>${dashboardPeriod==='custom'?`<div class="form-grid"><label>Du<input type="date" value="${esc(dashboardCustomStart)}" onchange="dashboardCustomStart=this.value;render()"></label><label>Au<input type="date" value="${esc(dashboardCustomEnd)}" onchange="dashboardCustomEnd=this.value;render()"></label></div>`:''}`;
+  const heading=`<div class="dash-heading"><div><div class="eyebrow">Pilotage de votre activité</div><h1>Dashboard</h1><p>Vos revenus, vos clients et les prochaines actions.</p></div><button class="primary" onclick="dashAnalysis()">✦ Analyser mon activité</button></div>${filters}`;
+  if(!start||!end||start>end||(end-start)/dashDay>3660)return `<section class="dashboard-page">${heading}<p class="notice">Choisissez une période valide (maximum 10 ans).</p></section>`;
+  const period=all.filter(d=>dashWithin(d,start,end)),ca=dashSum(period),cs=dashClients(period),ps=dashProducts(period);
+  const ms=new Date(now.getFullYear(),now.getMonth(),1,12),ys=new Date(now.getFullYear(),0,1,12),month=all.filter(d=>dashWithin(d,ms,now)),previous=all.filter(d=>dashWithin(d,dashShift(ms,-1),dashShift(now,-1))),year=all.filter(d=>dashWithin(d,ys,now)),previousYear=all.filter(d=>dashWithin(d,dashShift(ys,-12),dashShift(now,-12)));
+  const unpaid=all.filter(d=>!d.paid),late=unpaid.filter(d=>d.due&&d.due<today()),avg=month.length?dashSum(month)/month.length:0,prevAvg=previous.length?dashSum(previous)/previous.length:0;
+  const kpi=(kind,label,value,sub,cls='')=>`<button class="dash-kpi ${cls}" onclick="dashKpi('${kind}')"><span>${label}</span><strong>${euro(value)}</strong><small>${sub}</small></button>`;
+  const buckets=dashBuckets(start,end).map(b=>({...b,total:dashSum(all.filter(d=>dashWithin(d,b.start,b.end))),prior:dashSum(all.filter(d=>dashWithin(d,dashShift(b.start,-12),dashShift(b.end,-12)))),received:dashSum(all.filter(d=>d.paid&&dashWithin(d,b.start,b.end,'paidAt')),'total')}));
+  const max=Math.max(1,...buckets.flatMap(b=>[b.total,b.prior,b.received]));
+  const paid=period.filter(d=>d.paid),overdue=period.filter(d=>!d.paid&&d.due&&d.due<today()),waiting=period.length-paid.length-overdue.length,pct=n=>period.length?n/period.length*100:0;
+  const stats=dashPaymentStats(period),unknown=all.filter(d=>d.paid&&!dashDate(d.paidAt)),rec=dashRecurring(all),concentration=ca?cs.slice(0,3).reduce((s,c)=>s+c.total,0)/ca*100:0;
+  const paymentChanges=dashPaymentChanges(all,start,end);
+  const recurringShare=ca?dashSum(period.filter(d=>d.recurrence))/ca*100:0;
+  const priorProducts=dashProducts(all.filter(d=>dashWithin(d,dashShift(start,-12),dashShift(end,-12))));
+  const baseline=dashProducts(all.filter(d=>dashWithin(d,dashShift(ms,-3),new Date(+ms-dashDay)))),currentProducts=dashProducts(month);
+  const declines=baseline.map(p=>({...p,current:currentProducts.find(x=>x.key===p.key)?.total||0,baseline:p.total/3})).filter(p=>p.current<p.baseline).sort((a,b)=>(a.current/a.baseline)-(b.current/b.baseline));
+  const card=(title,body)=>`<section class="dash-card"><div class="dash-card-head"><h2>${title}</h2></div>${body}</section>`;
+  const clientRows=cs.map(c=>[esc(c.name),euro(c.total),c.count,`${ca?(c.total/ca*100).toFixed(1):0} %`]);
+  return `<section class="dashboard-page">${heading}<p class="dash-footnote">CA et prestations hors TVA · Créances et encaissements TTC · Paiements déclarés manuellement. Les KPI mensuels et annuels portent sur aujourd’hui ; les blocs ci-dessous suivent la période choisie.</p>
+  <div class="dash-kpis">${kpi('month','CA ce mois · HT',dashSum(month),dashTrend(dashSum(month),dashSum(previous))+' vs mois précédent à date','featured')}${kpi('unpaid','À encaisser · TTC',dashSum(unpaid,'total'),unpaid.length+' factures · toutes dates')}${kpi('late','En retard · TTC',dashSum(late,'total'),late.length+' factures · toutes dates','danger')}${kpi('average','Panier moyen du mois · HT',avg,dashTrend(avg,prevAvg)+' vs mois précédent à date')}${kpi('year','CA cette année · HT',dashSum(year),dashTrend(dashSum(year),dashSum(previousYear))+' vs année précédente à date')}</div>
+  ${card(`Chiffre d’affaires · ${fmt(dashISO(start))} — ${fmt(dashISO(end))}`,`<div class="dash-chart-legend"><span>● Facturé HT</span><span>● Même période N−1 HT</span><span>● Encaissé TTC daté</span></div><div class="dash-chart-scroll"><div class="dash-comparison" style="--cols:${buckets.length}">${buckets.map(b=>`<button class="dash-chart-column" onclick="dashBucketDetail('${dashISO(b.start)}','${dashISO(b.end)}')" aria-label="${esc(b.label)} : facturé ${euro(b.total)}, précédent ${euro(b.prior)}, encaissé ${euro(b.received)}" title="Facturé HT : ${euro(b.total)} · N−1 : ${euro(b.prior)} · Encaissé TTC : ${euro(b.received)}"><span class="dash-chart-bars">${[b.total,b.prior,b.received].map((n,i)=>`<i class="series-${i}" style="height:${n/max*100}%"></i>`).join('')}</span><small>${esc(b.label)}</small></button>`).join('')}</div></div><p class="dash-footnote">Cliquez sur une date pour le détail. Total facturé : <b>${euro(ca)} HT</b>. ${unknown.length} facture(s) payée(s) sans date exclue(s) de la série d’encaissements.</p>`)}
+  <div class="dash-two">${card('Top clients',dashTable(['Client','CA HT','Factures','Part'],clientRows.slice(0,5))+`<details><summary>Voir tous les clients (${cs.length})</summary>${dashTable(['Client','CA HT','Factures','Part'],clientRows)}</details><p class="dash-insight">Vos ${Math.min(3,cs.length)} premiers clients représentent <strong>${concentration.toFixed(1)} %</strong> du CA sélectionné.</p>`)}
+  ${card('Top prestations',dashTable(['Prestation','CA HT','Quantité','Prix moyen HT','Part','Évolution N−1'],ps.map(p=>[esc(p.name),euro(p.total),p.qty.toLocaleString('fr-BE'),euro(p.qty?p.total/p.qty:0),`${ca?(p.total/ca*100).toFixed(1):0} %`,dashTrend(p.total,priorProducts.find(x=>x.key===p.key)?.total||0)]))+`<p class="dash-footnote">Regroupement par libellé. Le CA ne mesure pas la rentabilité : les coûts ne sont pas enregistrés.</p>`)}</div>
+  <div class="dash-two">${card('Suivi des paiements',`<div class="dash-payment-grid"><div class="dash-donut" style="background:conic-gradient(var(--green) 0 ${pct(paid.length)}%,#d8a83e ${pct(paid.length)}% ${pct(paid.length+waiting)}%,#a52b20 ${pct(paid.length+waiting)}% 100%)"><div><strong>${pct(paid.length).toFixed(0)} %</strong><small>payées</small></div></div><div>${[['Payées',paid.length],['En attente',waiting],['En retard',overdue.length]].map(([label,n])=>`<p>${label} : <b>${n} · ${pct(n).toFixed(0)} %</b></p>`).join('')}</div></div>${paymentChanges.current.average!==null&&paymentChanges.previous.average!==null?`<p>Évolution par date de paiement : ${paymentChanges.previous.average.toFixed(1)} → ${paymentChanges.current.average.toFixed(1)} jours (période précédente de même durée).</p>`:''}<p>Délai moyen : <strong>${stats.average===null?'Non disponible':stats.average.toFixed(1)+' jours'}</strong> · ${stats.known.length} paiement(s) daté(s).</p>${stats.groups.length?`<p>Le plus rapide : ${esc(stats.groups[0].name)} · ${stats.groups[0].days.toFixed(1)} j (${stats.groups[0].count} factures)<br>Le plus lent : ${esc(stats.groups.at(-1).name)} · ${stats.groups.at(-1).days.toFixed(1)} j (${stats.groups.at(-1).count} factures)</p>`:''}<p class="dash-footnote">Statut actuel des factures émises sur la période, en nombre de factures.</p>${unknown.length?`<button onclick="dashOpenDocs('Dates de paiement manquantes',dashInvoices().filter(d=>d.paid&&!dashDate(d.paidAt)))">Compléter ${unknown.length} date(s) manquante(s)</button>`:''}`)}
+  ${card('Revenus récurrents',`<div class="dash-recurring-value">${euro(rec.monthly)} <small>HT / mois</small></div><p>${rec.list.length} récurrence(s) configurée(s) · montant mensualisé</p><p>${recurringShare.toFixed(1)} % du CA sélectionné porte une récurrence.</p><p class="dash-footnote">Part des factures avec une récurrence attachée uniquement : les copies sans lien d’abonnement ne sont pas identifiables.</p><p><strong>CA déjà planifié le mois prochain : ${euro(rec.planned)} HT</strong></p><p class="dash-footnote">Échéances récurrentes projetées uniquement. Aucune facture ni aucun envoi automatique. Les retards à préparer restent dans Abonnements.</p>${dashTable(['Prochaine échéance','Client','HT'],rec.list.slice(0,5).map(d=>[esc(d.recurrence.next),esc(client(d).name),euro(totals(d).net)]))}<a href="#recurring">Gérer les abonnements →</a>`)}</div>
+  ${card('À surveiller',`<div class="dash-attention">${paymentChanges.slower.map(c=>`<div><b>${esc(c.name)} · paiement plus lent</b><span>${c.before.days.toFixed(1)} → ${c.days.toFixed(1)} jours · ${c.before.count} puis ${c.count} paiement(s) daté(s)</span></div>`).join('')}${late.sort((a,b)=>a.due.localeCompare(b.due)).slice(0,5).map(d=>`<button onclick="dashKpi('late')"><b>${esc(d.id)} · ${esc(client(d).name)}</b><span>${Math.round((now-dashDate(d.due))/dashDay)} jours de retard · ${euro(totals(d).total)} TTC</span><strong>Voir / relancer →</strong></button>`).join('')||'<p>Aucune facture en retard.</p>'}<button onclick="dashKpi('month')"><b>Évolution mensuelle du CA</b><span>${dashTrend(dashSum(month),dashSum(previous))} vs mois précédent à date</span></button>${concentration>=40?`<div><b>Dépendance clients</b><span>${concentration.toFixed(1)} % du CA provient des ${Math.min(3,cs.length)} premiers clients.</span></div>`:''}</div>`)}
+  ${card('Prestations en baisse · mois en cours',dashTable(['Prestation','CA HT à ce jour','Moyenne mensuelle des 3 mois complets précédents','Écart'],declines.map(p=>[esc(p.name),euro(p.current),euro(p.baseline),dashTrend(p.current,p.baseline)]))+`<p class="dash-footnote">Le mois en cours est incomplet : cet écart est un signal à vérifier, pas une baisse définitive.</p>`)}
+  </section>`;
+}
