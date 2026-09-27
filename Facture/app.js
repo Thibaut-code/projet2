@@ -281,7 +281,7 @@ function start(type) {
     type,
     client: null,
     date: today(),
-    due: addCalendarDays(today(), 21),
+    due: addCalendarDays(today(), type === "devis" ? 14 : 21),
     job: "",
     lines: [],
   };
@@ -394,7 +394,7 @@ async function saveDraft() {
 }
 function baseDocumentHTML(d) {
   const c = d.customer || client(d),
-    biz = d.issuer || company;
+    biz = documentBusiness(d);
   return `<article class="document"><div class="document-heading">${logoHTML(biz.logo, biz.logo_shape)}<h2>${d.type === "devis" ? "DEVIS" : "FACTURE"}</h2></div><div class="document-top"><div><strong>${esc(biz.name)}</strong><p class="muted">${esc(biz.address)}<br>${esc(biz.vat)}</p></div><div><strong>${esc(d.id)}</strong><p>Date : ${fmt(d.date)}<br>${d.type === "devis" ? "Valable jusqu’au" : "Échéance"} : ${fmt(d.due)}</p></div></div><hr style="border:0;border-top:1px solid var(--line)"><p class="document-client"><small class="muted">CLIENT</small><br><strong>${esc(c.name)}</strong><br>${esc(c.address)}</p><h3>${esc(d.job)}</h3>${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ""}<table><thead><tr><th>Prestation</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty * l.price))}</td></tr>`).join("")}</tbody></table>${totalBlock(d)}<p style="margin-top:25px">Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p>${paymentQR(d, biz)}<div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal" style="font-size:.8rem;margin-top:15px">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
 }
 function view(id) {
@@ -716,10 +716,11 @@ function addCalendarDays(value, days) {
   return date.toISOString().slice(0,10);
 }
 function changeDraftDate(value) {
-  const automatic = !draft.dueManual && draft.due === addCalendarDays(draft.date,21);
+  const days = draft.type === "devis" ? 14 : 21;
+  const automatic = !draft.dueManual && draft.due === addCalendarDays(draft.date,days);
   draft.date = value;
   if (automatic && validDate(value)) {
-    draft.due = addCalendarDays(value,21);
+    draft.due = addCalendarDays(value,days);
     render();
   }
 }
@@ -1344,7 +1345,7 @@ function render() {
 
 
 const DEFAULT_APPEARANCE = {template:"classique", color:"#194739", font:"sans"};
-const TEMPLATES = {classique:"Classique", moderne:"Moderne", minimal:"Minimaliste", elegant:"Élégant", compact:"Compact"};
+const TEMPLATES = {classique:"1 · Original", bleu_nuit:"2 · Bleu nuit"};
 let appearanceDraft = null;
 let appearanceTarget = null;
 function publicCustomer(c) {
@@ -1362,11 +1363,23 @@ function readClientExtras(form) {
   return Object.fromEntries(["note","vat","peppol_id","street","postal_code","city","country"].map(k => [k, String(form.get(k) || '').trim()]));
 }
 function cleanAppearance(a = {}) {
-  return {template:Object.hasOwn(TEMPLATES,a.template) ? a.template : "classique", color:/^#[0-9a-f]{6}$/i.test(a.color) ? a.color : DEFAULT_APPEARANCE.color, font:a.font === "serif" ? "serif" : "sans"};
+  const template = a?.template === 'bleu_nuit' ? 'bleu_nuit' : 'classique';
+  return {template, color:template === 'bleu_nuit' ? '#0b304e' : '#194739', font:'sans'};
+}
+function documentBusiness(d) {
+  const biz = d.issuer || company;
+  // Old quotes may predate the logo upload. Keep their other snapshot fields.
+  return d.type === 'devis' && !safeLogo(biz.logo)
+    ? {...biz, logo:company.logo, logo_shape:company.logo_shape} : biz;
+}
+function navyDocumentHTML(d) {
+  const c = d.customer || client(d), biz = documentBusiness(d);
+  return `<article class="document"><div class="document-heading">${logoHTML(biz.logo,biz.logo_shape)}<div class="invoice-title"><h2>${d.type === 'devis' ? 'DEVIS' : 'FACTURE'}</h2><div>${esc(d.id)}</div></div></div><div class="invoice-parties"><div><h3 class="party-heading">${esc(biz.name)}</h3><p>${esc(biz.address)}${biz.vat ? '<br>'+esc(biz.vat) : ''}</p></div><div class="invoice-buyer"><h3 class="party-heading">CLIENT</h3><p><strong>${esc(c.name)}</strong><br>${esc(c.address)}${c.vat ? '<br>'+esc(c.vat) : ''}</p></div></div><p class="invoice-dates">Date : ${fmt(d.date)}<br>${d.type === 'devis' ? 'Valable jusqu’au' : 'Échéance'} : ${fmt(d.due)}</p>${d.job ? `<h3 class="invoice-job">${esc(d.job)}</h3>` : ''}${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ''}<table><thead><tr><th>Description</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map(l=>`<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty*l.price))}</td></tr>`).join('')}</tbody></table>${totalBlock(d)}<div class="invoice-payment">${paymentQR(d,biz)}<p>Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p></div><div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
 }
 function documentHTML(d) {
   const a = cleanAppearance(d.appearance || company.appearance || DEFAULT_APPEARANCE);
-  return baseDocumentHTML(d).replace('class="document"', `class="document template-${a.template} font-${a.font}" style="--invoice-accent:${a.color}"`);
+  const html = a.template === 'bleu_nuit' ? navyDocumentHTML(d) : baseDocumentHTML(d);
+  return html.replace('class="document"', `class="document template-${a.template} font-sans" style="--invoice-accent:${a.color}"`);
 }
 function documentActions(d) {
   return `<section class="no-print panel"><div class="filter-row"><strong>${d.sentAt ? 'Envoyé le ' + new Date(d.sentAt).toLocaleString('fr-BE') : 'Enregistré'}</strong><button onclick="sendDocument('${d.id}')">${d.sentAt ? 'Renvoyer par e-mail' : 'Envoyer par e-mail'}</button><button onclick="customizeDocument('${d.id}')">Modèle et aperçu</button>${!d.sentAt && !d.paid && !d.peppol ? `<button onclick="editDocument('${d.id}')">Modifier le contenu</button>${d.type === 'facture' ? `<button class="danger-button" onclick="deleteInvoice('${d.id}')">Supprimer la facture</button>` : ''}` : ''}${d.type === 'facture' ? `<button onclick="sendPeppolTest('${d.id}')">Peppol · test</button>` : ''}</div>${d.peppol ? `<p>Peppol test : demande enregistrée auprès du fournisseur. Vérifiez la livraison dans son tableau de bord.</p>` : ''}<div id="action-error" class="application-error" role="alert"></div></section>`;
@@ -1400,7 +1413,7 @@ function customizeDocument(id) {
   const d = id ? docs.find(x => x.id === id) : draft;
   if (!d) return;
   appearanceDraft = cleanAppearance(d.appearance || company.appearance || DEFAULT_APPEARANCE);
-  const dialog = featureDialog('Personnaliser le document', `<div class="template-editor"><div><label class="field">Modèle<select id="template-choice" onchange="updateAppearance('template',this.value)">${Object.entries(TEMPLATES).map(([key,label]) => `<option value="${key}" ${appearanceDraft.template === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label><label class="field">Couleur<input id="template-color" type="color" value="${appearanceDraft.color}" oninput="updateAppearance('color',this.value)"></label><label class="field">Police<select id="template-font" onchange="updateAppearance('font',this.value)"><option value="sans">Sans empattement</option><option value="serif" ${appearanceDraft.font === 'serif' ? 'selected' : ''}>Avec empattement</option></select></label><button onclick="resetAppearance()">Retour au modèle par défaut</button><label class="field"><span><input id="default-appearance" type="checkbox"> Utiliser aussi pour mes prochains documents</span></label><button class="primary" onclick="saveAppearance()">Enregistrer le modèle</button></div><div id="template-preview" aria-live="polite"></div></div>`);
+  const dialog = featureDialog('Personnaliser le document', `<div class="template-editor"><div><label class="field">Modèle<select id="template-choice" onchange="updateAppearance('template',this.value)">${Object.entries(TEMPLATES).map(([key,label]) => `<option value="${key}" ${appearanceDraft.template === key ? 'selected' : ''}>${label}</option>`).join('')}</select></label><button onclick="resetAppearance()">Retour au modèle par défaut</button><label class="field"><span><input id="default-appearance" type="checkbox"> Utiliser aussi pour mes prochains documents</span></label><button class="primary" onclick="saveAppearance()">Enregistrer le modèle</button></div><div id="template-preview" aria-live="polite"></div></div>`);
   dialog.classList.add('wide-dialog'); drawAppearance();
 }
 function drawAppearance() {
@@ -1410,7 +1423,7 @@ function drawAppearance() {
 function updateAppearance(k,v) { appearanceDraft[k]=v; drawAppearance(); }
 function resetAppearance() {
   appearanceDraft = {...DEFAULT_APPEARANCE};
-  $('#template-choice').value=appearanceDraft.template; $('#template-color').value=appearanceDraft.color; $('#template-font').value=appearanceDraft.font; drawAppearance();
+  $('#template-choice').value=appearanceDraft.template; drawAppearance();
 }
 async function saveAppearance() {
   if (featureBusy) return; featureBusy=true;
@@ -1433,17 +1446,59 @@ async function saveAppearance() {
 function askSend(id) {
   featureDialog('Facture enregistrée', `<p>Voulez-vous l’envoyer par e-mail au client ?</p><button class="primary" onclick="sendDocument('${id}')">Oui, préparer l’envoi</button> <button onclick="this.closest('dialog').close()">Plus tard</button>`);
 }
+async function documentPDF(d) {
+  if (typeof html2pdf !== 'function') throw Error('Le générateur PDF est indisponible. Rechargez la page.');
+  const wrapper = document.createElement('div');
+  wrapper.className = 'pdf-export'; wrapper.style.width = '182mm';
+  wrapper.innerHTML = documentHTML(d);
+  return await html2pdf().set({margin:14,filename:documentFilename(d)+'.pdf',
+    image:{type:'jpeg',quality:0.96},html2canvas:{scale:2,backgroundColor:'#ffffff',logging:false},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['css'],avoid:['tr','.document-heading','.invoice-parties','.total','.payment-qr','.invoice-payment','.document-legal']}
+  }).from(wrapper).outputPdf('blob');
+}
+function documentFilename(d) { return String(d.id).replace(/[^a-zA-Z0-9_-]/g,'_'); }
+function downloadAttachment(blob,name) {
+  const url=URL.createObjectURL(blob), link=document.createElement('a');
+  link.href=url;link.download=name;link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function base64UTF8(value) {
+  return btoa(Array.from(new TextEncoder().encode(value),b=>String.fromCharCode(b)).join(''));
+}
+async function emailDraftBlob(pdf,filename,recipient,subject,body) {
+  if (/[\r\n]/.test(recipient)) throw Error('Adresse e-mail invalide.');
+  const bytes = new Uint8Array(await pdf.arrayBuffer());
+  let binary=''; for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
+  const wrap = s => s.match(/.{1,76}/g)?.join('\r\n') || '';
+  const boundary='facture_'+Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
+  const headers=['X-Unsent: 1','To: '+recipient,
+    'Subject: =?UTF-8?B?'+base64UTF8(subject.replace(/[\r\n]/g,' '))+'?=',
+    'MIME-Version: 1.0','Content-Type: multipart/mixed; boundary="'+boundary+'"','',
+    '--'+boundary,'Content-Type: text/plain; charset=UTF-8','Content-Transfer-Encoding: base64','',wrap(base64UTF8(body)),
+    '--'+boundary,'Content-Type: application/pdf; name="'+filename+'"','Content-Disposition: attachment; filename="'+filename+'"',
+    'Content-Transfer-Encoding: base64','',wrap(btoa(binary)),'--'+boundary+'--',''];
+  return new Blob([headers.join('\r\n')],{type:'message/rfc822'});
+}
 function sendDocument(id) {
   const d = docs.find(x => x.id === id); if (!d) return;
-  const c = client(d);
-  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Exportez d’abord le PDF, puis joignez-le dans votre messagerie. L’ouverture du message ne confirme pas son envoi.</p><button onclick="window.print()">Imprimer / PDF</button><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Ouvrir ma messagerie</button></form><div id="send-confirm"></div>`);
-  $('#send-form').onsubmit = e => {
-    e.preventDefault(); const f = new FormData(e.target);
-    const recipient = String(f.get('recipient'));
-    const url = `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(f.get('subject'))}&body=${encodeURIComponent(f.get('body'))}`;
-    $('#send-confirm').innerHTML = `<p><a href="${esc(url)}">Ouvrir à nouveau le message</a></p><p>Après avoir joint le PDF et envoyé le message :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
-    $('#confirm-document-send').onclick = () => confirmDocumentSend(d,recipient);
-    location.href=url;
+  const c = d.customer || client(d);
+  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Le PDF sera généré et joint au message préparé. Vous choisirez ensuite votre messagerie.</p><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Préparer l’e-mail avec le PDF</button></form><div id="send-confirm" aria-live="polite"></div>`);
+  $('#send-form').onsubmit = async e => {
+    e.preventDefault(); if(featureBusy)return; featureBusy=true;
+    const submit=e.target.querySelector('button');submit.disabled=true;submit.textContent='Génération du PDF…';
+    const f = new FormData(e.target), recipient=String(f.get('recipient')), subject=String(f.get('subject')), body=String(f.get('body'));
+    try {
+      const pdf=await documentPDF(d), filename=documentFilename(d)+'.pdf';
+      const file=new File([pdf],filename,{type:'application/pdf'});
+      const eml=await emailDraftBlob(pdf,filename,recipient,subject,body);
+      const canShare=!!navigator.canShare?.({files:[file]});
+      $('#send-confirm').innerHTML=`<p>PDF prêt : ${esc(filename)}</p>${canShare ? '<button class="primary" id="share-document">Ouvrir une messagerie avec le PDF</button><p>Choisissez votre messagerie dans le partage. Vérifiez le destinataire, l’objet et le message avant l’envoi.</p>' : ''}<button id="download-email">Télécharger l’e-mail avec le PDF joint (.eml)</button><p>Ouvrez le fichier .eml dans une messagerie compatible. Selon votre logiciel, utilisez « Modifier comme nouveau message » avant l’envoi.</p><button id="download-document-pdf">Télécharger uniquement le PDF</button><p>Après l’envoi effectif dans votre messagerie :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
+      if(canShare) $('#share-document').onclick=async()=>{try{await navigator.share({files:[file],title:subject,text:body});}catch(error){if(error.name!=='AbortError')featureError(error);}};
+      $('#download-email').onclick=()=>downloadAttachment(eml,documentFilename(d)+'.eml');
+      $('#download-document-pdf').onclick=()=>downloadAttachment(pdf,filename);
+      $('#confirm-document-send').onclick=()=>confirmDocumentSend(d,recipient);
+    } catch(error) { featureError(error); }
+    finally {featureBusy=false;submit.disabled=false;submit.textContent='Préparer l’e-mail avec le PDF';}
   };
 }
 async function confirmDocumentSend(d,recipient) {

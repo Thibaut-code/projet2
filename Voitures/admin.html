@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AutoPrime – Guide Administration</title>
+<link href="style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+</head>
+<body class="admin-page">
+<div class="admin-wrap">
+<!-- HEADER -->
+<div class="admin-header">
+<i class="fas fa-cog"></i>
+<div>
+<h1>⚙️ Guide d'administration – AutoPrime</h1>
+<p>Gérez votre stock de voitures facilement depuis Google Sheets</p>
+</div>
+</div>
+<!-- ALERTE INFO -->
+<div class="admin-alert info">
+<i class="fas fa-info-circle"></i>
+<div>
+<strong>Comment ça fonctionne ?</strong><br/>
+            Votre site lit automatiquement votre Google Sheet à chaque visite. Dès que vous ajoutez, modifiez ou supprimez une voiture dans le tableau, le site se met à jour pour tous vos visiteurs — sans toucher au code.
+        </div>
+</div>
+<!-- ÉTAPE 1 : CRÉER LE SHEET -->
+<div class="admin-card">
+<h2><i class="fas fa-table"></i> Étape 1 – Créer votre Google Sheet</h2>
+<div class="step-list">
+<div class="step-item">
+<div class="step-num">1</div>
+<div>
+<p>Allez sur <strong><a href="https://sheets.google.com" target="_blank">sheets.google.com</a></strong> et créez un nouveau tableau.</p>
+</div>
+</div>
+<div class="step-item">
+<div class="step-num">2</div>
+<div>
+<p>Nommez le premier onglet exactement : <strong>Voitures</strong> (avec une majuscule)</p>
+</div>
+</div>
+<div class="step-item">
+<div class="step-num">3</div>
+<div>
+<p>En <strong>ligne 1</strong>, ajoutez ces en-têtes de colonnes exactement comme indiqué ci-dessous :</p>
+</div>
+</div>
+</div>
+<!-- TABLEAU DES COLONNES -->
+<table class="col-table">
+<thead>
+<tr>
+<th>Colonne</th>
+<th>Nom exact</th>
+<th>Exemple</th>
+<th>Obligatoire ?</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>A</td><td>marque</td><td>BMW</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>B</td><td>modele</td><td>Série 5 530d</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>C</td><td>annee</td><td>2021</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>D</td><td>km</td><td>48000</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>E</td><td>carburant</td><td>Diesel</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>F</td><td>boite</td><td>Automatique</td><td><span class="optional">○ Optionnel</span></td></tr>
+<tr><td>G</td><td>prix</td><td>34900</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>H</td><td>categorie</td><td>Berline</td><td><span class="required">● Obligatoire</span></td></tr>
+<tr><td>I</td><td>badge</td><td>Nouveau</td><td><span class="optional">○ Optionnel</span></td></tr>
+<tr><td>J</td><td>dispo</td><td>Oui</td><td><span class="optional">○ Optionnel</span></td></tr>
+<tr><td>K</td><td>photo</td><td>https://... (URL image)</td><td><span class="optional">○ Optionnel</span></td></tr>
+</tbody>
+</table>
+<div class="admin-alert warning" style="margin-top:20px">
+<i class="fas fa-exclamation-triangle"></i>
+<div>
+<strong>Important :</strong> Les noms de colonnes doivent être écrits en <strong>minuscules</strong> et exactement comme indiqué. Ne pas mettre d'accents ni d'espaces.
+            </div>
+</div>
+</div>
+<!-- VALEURS AUTORISÉES -->
+<div class="admin-card">
+<h2><i class="fas fa-list-ul"></i> Valeurs autorisées par colonne</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;flex-wrap:wrap">
+<div>
+<p style="font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748B;margin-bottom:10px">Carburant</p>
+<ul style="font-size:0.88rem;color:#334155;line-height:2">
+<li>✅ Essence</li>
+<li>✅ Diesel</li>
+<li>✅ Hybride</li>
+<li>✅ Électrique</li>
+<li>✅ GPL</li>
+</ul>
+</div>
+<div>
+<p style="font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748B;margin-bottom:10px">Catégorie</p>
+<ul style="font-size:0.88rem;color:#334155;line-height:2">
+<li>✅ Berline</li>
+<li>✅ SUV</li>
+<li>✅ Citadine</li>
+<li>✅ Premium</li>
+<li>✅ Utilitaire</li>
+</ul>
+</div>
+<div>
+<p style="font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748B;margin-bottom:10px">Badge (optionnel)</p>
+<ul style="font-size:0.88rem;color:#334155;line-height:2">
+<li>🔵 Nouveau</li>
+<li>🔴 Promo</li>
+<li>🟢 Hybride</li>
+<li>🟢 Électrique</li>
+<li>(laisser vide = pas de badge)</li>
+</ul>
+</div>
+<div>
+<p style="font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#64748B;margin-bottom:10px">Disponibilité</p>
+<ul style="font-size:0.88rem;color:#334155;line-height:2">
+<li>✅ Oui → Affiché en vert</li>
+<li>❌ Non → Affiché en rouge "Vendu"</li>
+<li>❌ Vendu → Affiché en rouge "Vendu"</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- ÉTAPE 2 : RENDRE PUBLIC -->
+<div class="admin-card">
+<h2><i class="fas fa-globe"></i> Étape 2 – Rendre le Sheet public</h2>
+<div class="admin-alert warning">
+<i class="fas fa-exclamation-triangle"></i>
+<div>
+<strong>Étape indispensable !</strong> Sans ça, le site ne pourra pas lire vos données.
+            </div>
+</div>
+<div class="step-list" style="margin-top:20px">
+<div class="step-item">
+<div class="step-num">1</div>
+<div><p>Cliquez sur le bouton <strong>« Partager »</strong> en haut à droite de Google Sheets</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">2</div>
+<div><p>Cliquez sur <strong>« Modifier »</strong> à côté de "Accès restreint"</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">3</div>
+<div><p>Sélectionnez <strong>« Tous les utilisateurs disposant du lien »</strong></p></div>
+</div>
+<div class="step-item">
+<div class="step-num">4</div>
+<div><p>Assurez-vous que le rôle est <strong>« Lecteur »</strong> (pas Éditeur)</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">5</div>
+<div><p>Cliquez sur <strong>« OK »</strong> pour confirmer</p></div>
+</div>
+</div>
+</div>
+<!-- ÉTAPE 3 : RÉCUPÉRER L'ID -->
+<div class="admin-card">
+<h2><i class="fas fa-key"></i> Étape 3 – Récupérer l'ID du Sheet</h2>
+<div class="step-list">
+<div class="step-item">
+<div class="step-num">1</div>
+<div><p>Regardez l'URL de votre Google Sheet dans le navigateur. Elle ressemble à :</p></div>
+</div>
+</div>
+<div class="admin-sheet-url">
+            https://docs.google.com/spreadsheets/d/<strong style="color:#1A56DB;background:rgba(26,86,219,0.1);padding:2px 6px;border-radius:4px">1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms</strong>/edit#gid=0
+        </div>
+<div class="step-list">
+<div class="step-item">
+<div class="step-num">2</div>
+<div><p>Copiez la partie en bleu entre <code>/d/</code> et <code>/edit</code> — c'est votre <strong>Sheet ID</strong></p></div>
+</div>
+<div class="step-item">
+<div class="step-num">3</div>
+<div><p>Collez-le dans le champ ci-dessous et cliquez sur "Appliquer" :</p></div>
+</div>
+</div>
+<!-- OUTIL DE CONFIGURATION -->
+<div style="background:var(--light);border-radius:var(--r-sm);padding:24px;margin-top:16px">
+<label style="font-size:0.8rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#334155;display:block;margin-bottom:8px">
+<i class="fas fa-paste" style="color:#1A56DB"></i> Votre Sheet ID
+            </label>
+<input class="sheet-id-input" id="sheetIdInput" placeholder="Ex: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" type="text"/>
+<button class="admin-btn" onclick="generateCode()">
+<i class="fas fa-magic"></i> Générer le code à copier
+            </button>
+<div id="generatedCode" style="display:none;margin-top:20px">
+<p style="font-size:0.85rem;font-weight:600;color:#334155;margin-bottom:8px">
+<i class="fas fa-check-circle" style="color:#10B981"></i>
+                    Copiez cette ligne et remplacez-la dans le fichier <code>script.js</code> (ligne 10) :
+                </p>
+<div class="admin-sheet-url" id="codeOutput" onclick="copyCode()" style="cursor:pointer" title="Cliquer pour copier"></div>
+<button class="admin-btn green" onclick="copyCode()" style="margin-top:8px">
+<i class="fas fa-copy"></i> Copier le code
+                </button>
+<p style="font-size:0.78rem;color:#64748B;margin-top:8px">
+                    Ouvrez <code>script.js</code> avec un éditeur de texte (Notepad, VS Code...) et remplacez la ligne qui contient <code>VOTRE_SHEET_ID_ICI</code>
+</p>
+</div>
+</div>
+</div>
+<!-- ÉTAPE 4 : AJOUTER DES VOITURES -->
+<div class="admin-card">
+<h2><i class="fas fa-plus-circle"></i> Étape 4 – Ajouter / modifier des voitures</h2>
+<div class="admin-alert info">
+<i class="fas fa-lightbulb"></i>
+<div>
+                Une fois configuré, c'est aussi simple que de remplir un tableau Excel. Chaque ligne = une voiture.
+            </div>
+</div>
+<div class="step-list" style="margin-top:20px">
+<div class="step-item">
+<div class="step-num">➕</div>
+<div><p><strong>Ajouter une voiture :</strong> Ajoutez une nouvelle ligne dans le tableau avec toutes les informations. Le site l'affichera automatiquement.</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">✏️</div>
+<div><p><strong>Modifier une voiture :</strong> Modifiez directement la cellule concernée. Le changement sera visible sur le site à la prochaine visite.</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">🗑️</div>
+<div><p><strong>Supprimer une voiture :</strong> Supprimez la ligne entière. Ou mettez <strong>Non</strong> dans la colonne "dispo" pour l'afficher comme "Vendu".</p></div>
+</div>
+<div class="step-item">
+<div class="step-num">📸</div>
+<div><p><strong>Ajouter une photo :</strong> Mettez l'URL directe d'une image dans la colonne "photo". Vous pouvez héberger vos photos sur <a href="https://imgur.com" style="color:#1A56DB" target="_blank">imgur.com</a> ou <a href="https://cloudinary.com" style="color:#1A56DB" target="_blank">cloudinary.com</a> gratuitement.</p></div>
+</div>
+</div>
+</div>
+<!-- EXEMPLE DE DONNÉES -->
+<div class="admin-card">
+<h2><i class="fas fa-file-excel"></i> Exemple de données dans le Sheet</h2>
+<div style="overflow-x:auto">
+<table class="col-table">
+<thead>
+<tr>
+<th>marque</th>
+<th>modele</th>
+<th>annee</th>
+<th>km</th>
+<th>carburant</th>
+<th>boite</th>
+<th>prix</th>
+<th>categorie</th>
+<th>badge</th>
+<th>dispo</th>
+<th>photo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>BMW</td><td>Série 3 320d</td><td>2021</td><td>45000</td>
+<td>Diesel</td><td>Automatique</td><td>28900</td><td>Berline</td>
+<td>Nouveau</td><td>Oui</td><td>https://...</td>
+</tr>
+<tr>
+<td>Peugeot</td><td>3008 GT</td><td>2020</td><td>62000</td>
+<td>Diesel</td><td>Automatique</td><td>22500</td><td>SUV</td>
+<td></td><td>Oui</td><td>https://...</td>
+</tr>
+<tr>
+<td>Tesla</td><td>Model 3</td><td>2022</td><td>28000</td>
+<td>Électrique</td><td>Automatique</td><td>35900</td><td>Premium</td>
+<td>Électrique</td><td>Oui</td><td>https://...</td>
+</tr>
+<tr>
+<td>Renault</td><td>Clio V</td><td>2019</td><td>71000</td>
+<td>Essence</td><td>Manuelle</td><td>10900</td><td>Citadine</td>
+<td>Promo</td><td>Non</td><td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- ACCÈS RAPIDE -->
+<div class="admin-card">
+<h2><i class="fas fa-rocket"></i> Accès rapide</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<a class="admin-btn" href="https://sheets.google.com" target="_blank">
+<i class="fas fa-table"></i> Ouvrir Google Sheets
+            </a>
+<a class="admin-btn" href="index.html" style="background:#334155">
+<i class="fas fa-eye"></i> Voir le site
+            </a>
+<button class="admin-btn" onclick="window.location.reload()" style="background:#10B981">
+<i class="fas fa-sync"></i> Rafraîchir cette page
+            </button>
+</div>
+</div>
+<!-- FAQ -->
+<div class="admin-card">
+<h2><i class="fas fa-question-circle"></i> Questions fréquentes</h2>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div>
+<p style="font-weight:700;color:#0F172A;margin-bottom:4px">❓ Le site ne charge pas mes voitures ?</p>
+<p style="font-size:0.88rem;color:#64748B">Vérifiez que : (1) le Sheet est bien public, (2) l'onglet s'appelle exactement "Voitures", (3) le Sheet ID est correct dans script.js</p>
+</div>
+<div>
+<p style="font-weight:700;color:#0F172A;margin-bottom:4px">❓ Combien de temps avant que les changements soient visibles ?</p>
+<p style="font-size:0.88rem;color:#64748B">Immédiatement ! Le site recharge les données à chaque visite. Actualisez simplement la page du site.</p>
+</div>
+<div>
+<p style="font-weight:700;color:#0F172A;margin-bottom:4px">❓ Puis-je avoir plusieurs photos par voiture ?</p>
+<p style="font-size:0.88rem;color:#64748B">Pour l'instant, une seule photo principale est supportée. Mettez l'URL de la meilleure photo.</p>
+</div>
+<div>
+<p style="font-weight:700;color:#0F172A;margin-bottom:4px">❓ Où héberger mes photos de voitures ?</p>
+<p style="font-size:0.88rem;color:#64748B">Gratuitement sur <a href="https://imgur.com" style="color:#1A56DB" target="_blank">imgur.com</a> (glissez-déposez la photo → copiez le lien direct). Ou sur <a href="https://cloudinary.com" style="color:#1A56DB" target="_blank">cloudinary.com</a> pour plus de contrôle.</p>
+</div>
+<div>
+<p style="font-weight:700;color:#0F172A;margin-bottom:4px">❓ Le Google Sheet est-il sécurisé ?</p>
+<p style="font-size:0.88rem;color:#64748B">Les visiteurs peuvent lire les données (c'est voulu), mais ils ne peuvent pas les modifier. Seul vous (connecté à votre compte Google) pouvez éditer le tableau.</p>
+</div>
+</div>
+</div>
+<p style="text-align:center;font-size:0.8rem;color:#94A3B8;padding:20px 0">
+        AutoPrime – Guide d'administration · <a href="index.html" style="color:#1A56DB">Retour au site</a>
+</p>
+</div>
+<script>
+function generateCode() {
+    const id = document.getElementById('sheetIdInput').value.trim();
+    if (!id) {
+        alert('Veuillez coller votre Sheet ID dans le champ ci-dessus.');
+        return;
+    }
+    const code = `const SHEET_ID = '${id}';`;
+    document.getElementById('codeOutput').textContent = code;
+    document.getElementById('generatedCode').style.display = 'block';
+    document.getElementById('generatedCode').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function copyCode() {
+    const code = document.getElementById('codeOutput').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.admin-btn.green');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copié !';
+        btn.style.background = '#059669';
+        setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.style.background = '';
+        }, 2000);
+    });
+}
+</script>
+</body>
+</html>
