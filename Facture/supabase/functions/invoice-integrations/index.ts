@@ -1,64 +1,449 @@
-// Supabase Edge Function. Les clés privées restent dans les secrets serveur.
+// Supabase Edge Function - Peppol / Recommand
+// peppol-test valide et génère le document via /generate SANS l'envoyer.
+
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const env = (name: string) => Deno.env.get(name) || '';
-const reply = (body: unknown, status=200) => new Response(JSON.stringify(body), {status, headers:{'Content-Type':'application/json','Access-Control-Allow-Origin':env('APP_ORIGIN'),'Vary':'Origin'}});
-const cents = (value:number) => Math.round((value+Number.EPSILON)*100);
-async function external(url:string, options:RequestInit) {
-  const response=await fetch(url,{...options,signal:AbortSignal.timeout(25000)});
-  const data=await response.json();
-  if(!response.ok || data.success===false) throw Error(`Le fournisseur a refusé la demande (${response.status}). Vérifiez ses journaux et les données du document.`);
+
+const reply = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': env('APP_ORIGIN'),
+      'Vary': 'Origin',
+    },
+  });
+
+const cents = (value: number) =>
+  Math.round((value + Number.EPSILON) * 100);
+
+async function external(url: string, options: RequestInit) {
+  console.log('Calling Recommand:', url);
+
+  const response = await fetch(url, {
+    ...options,
+    signal: AbortSignal.timeout(25000),
+  });
+
+  const raw = await response.text();
+
+  console.log('Recommand HTTP status:', response.status);
+  console.log('Recommand response:', raw);
+
+  let data: any;
+
+  try {
+    data = raw ? JSON.parse(raw) : {};
+  } catch {
+    data = { raw };
+  }
+
+  if (!response.ok || data?.success === false) {
+    const details =
+      data?.errors ??
+      data?.error ??
+      data?.message ??
+      data?.raw ??
+      raw ??
+      response.statusText;
+
+    const printable =
+      typeof details === 'string'
+        ? details
+        : JSON.stringify(details);
+
+    throw new Error(
+      `Recommand HTTP ${response.status}: ${printable || 'Erreur inconnue'}`
+    );
+  }
+
   return data;
 }
-Deno.serve(async req => {
-  if(req.method==='OPTIONS') return new Response(null,{headers:{'Access-Control-Allow-Origin':env('APP_ORIGIN'),'Access-Control-Allow-Headers':'authorization,x-client-info,apikey,content-type','Access-Control-Allow-Methods':'POST','Vary':'Origin'}});
-  if(req.method!=='POST') return reply({error:'Méthode non autorisée'},405);
-  let job: {document_id:string;action:string}|null=null;
-  const admin=createClient(env('SUPABASE_URL'),env('SUPABASE_SERVICE_ROLE_KEY'));
+
+Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': env('APP_ORIGIN'),
+        'Access-Control-Allow-Headers':
+          'authorization,x-client-info,apikey,content-type',
+        'Access-Control-Allow-Methods': 'POST',
+        'Vary': 'Origin',
+      },
+    });
+  }
+
+  if (req.method !== 'POST') {
+    return reply({ error: 'Méthode non autorisée' }, 405);
+  }
+
+  let job: { document_id: string; action: string } | null = null;
+
+  const admin = createClient(
+    env('SUPABASE_URL'),
+    env('SUPABASE_SERVICE_ROLE_KEY')
+  );
+
   try {
-    const token=req.headers.get('Authorization')?.replace(/^Bearer\s+/i,'');
-    if(!token) return reply({error:'Connexion requise'},401);
-    const {data:auth,error:authError}=await admin.auth.getUser(token);
-    if(authError || !auth.user) return reply({error:'Session invalide'},401);
-    const uid=auth.user.id;
-    const {action,documentId}=await req.json();
-    if(action!=='peppol-test' || !/^[a-f0-9-]{36}$/i.test(documentId)) return reply({error:'Demande invalide'},400);
-    const {data:d,error}=await admin.from('documents').select('*').eq('id',documentId).eq('user_id',uid).single();
-    if(error || !d || d.type!=='facture') return reply({error:'Facture introuvable'},404);
-    const cached=d.peppol;
-    if(cached) return reply({peppol:cached});
-    // Identifiants Peppol de test propres à chaque utilisateur.
-    const configs=JSON.parse(env('INTEGRATION_ACCOUNTS') || '{}');
-    const config=configs[uid];
-    if(!config) return reply({error:'Aucun compte fournisseur configuré pour votre utilisateur.'},409);
-    if(action==='peppol-test' && (!config.recommandKey || !config.recommandSecret || !config.testCompanyId || config.peppolEnvironment!=='test')) return reply({error:'Configurez une entreprise Recommand de playground / réseau de test et peppolEnvironment=test.'},409);
-    const {data:lines,error:lineError}=await admin.from('document_lines').select('*').eq('document_id',documentId).eq('user_id',uid).order('position');
-    if(lineError || !lines?.length) return reply({error:'Prestations indisponibles'},400);
-    let totalCents=0;
-    for(const l of lines) {const net=cents(Number(l.quantity)*Number(l.unit_price)); totalCents+=net+Math.round(net*Number(l.vat_rate)/100);}
-    if(!Number.isSafeInteger(totalCents)||totalCents<=0) return reply({error:'Montant invalide'},400);
-    const buyer=d.customer_snapshot || {};
-    if(action==='peppol-test' && (!buyer.peppol_id || !buyer.street || !buyer.city || !buyer.postal_code || !buyer.country || !buyer.vat)) return reply({error:'Complétez les coordonnées Peppol du client puis recréez ou modifiez le brouillon pour actualiser son instantané.'},400);
-    if(action==='peppol-test' && lines.some((l:any)=>Number(l.vat_rate)===0)) return reply({error:'TVA 0 % : le motif et la catégorie fiscale doivent être implémentés avant cet envoi. Les tests actuels prennent en charge 6, 12 et 21 %.'},400);
-    // Unicité en base : un timeout ambigu ne déclenche jamais un second envoi.
-    const lock=await admin.rpc('begin_integration_job',{target_document:documentId,target_user:uid,target_action:action,expected_document:d,expected_lines:lines});
-    if(lock.error) return reply({error:'Demande déjà initiée ou document indisponible. Vérifiez son état chez le fournisseur avant toute nouvelle tentative.'},409);
-    job={document_id:documentId,action};
-      const p=await external(`https://app.recommand.eu/api/v1/${encodeURIComponent(config.testCompanyId)}/send`,{
-        method:'POST',headers:{Authorization:`Basic ${btoa(config.recommandKey+':'+config.recommandSecret)}`,'Content-Type':'application/json'},
-        body:JSON.stringify({recipient:buyer.peppol_id,documentType:'invoice',document:{invoiceNumber:d.number,issueDate:d.issue_date,dueDate:d.due_date,currency:'EUR',
-          buyer:{name:buyer.name,street:buyer.street,city:buyer.city,postalZone:buyer.postal_code,country:buyer.country.toUpperCase(),vatNumber:buyer.vat},
-          paymentMeans:[{iban:String(d.issuer_snapshot?.iban || '').replace(/\s/g,'')}],
-          lines:lines.map((l:any)=>({name:l.name,quantity:String(l.quantity),unitCode:'C62',netPriceAmount:Number(l.unit_price).toFixed(2),vat:{category:'S',percentage:Number(l.vat_rate).toFixed(2)}}))}})
-      });
-    const saved={mode:'test',requestedAt:new Date().toISOString(),response:p};
-    const column='peppol';
-    const update=await admin.from('documents').update({[column]:saved}).eq('id',documentId).eq('user_id',uid);
-    if(update.error) throw Error('Le fournisseur a accepté la demande, mais sa sauvegarde a échoué. Ne renvoyez pas : vérifiez le fournisseur.');
-    const completed=await admin.from('integration_jobs').update({state:'accepted',result:saved}).eq('document_id',documentId).eq('action',action);
-    if(completed.error) console.error('Integration job state could not be saved');
-    return reply({[column]:saved});
-  } catch(e) {
-    if(job) await admin.from('integration_jobs').update({state:'needs_review'}).eq('document_id',job.document_id).eq('action',job.action);
-    return reply({error:e instanceof Error ? e.message : 'Erreur du service'},502);
+    const token = req.headers
+      .get('Authorization')
+      ?.replace(/^Bearer\s+/i, '');
+
+    if (!token) {
+      return reply({ error: 'Connexion requise' }, 401);
+    }
+
+    const { data: auth, error: authError } =
+      await admin.auth.getUser(token);
+
+    if (authError || !auth.user) {
+      return reply({ error: 'Session invalide' }, 401);
+    }
+
+    const uid = auth.user.id;
+    const { action, documentId } = await req.json();
+
+    if (
+      action !== 'peppol-test' ||
+      !/^[a-f0-9-]{36}$/i.test(documentId)
+    ) {
+      return reply({ error: 'Demande invalide' }, 400);
+    }
+
+    const { data: d, error } = await admin
+      .from('documents')
+      .select('*')
+      .eq('id', documentId)
+      .eq('user_id', uid)
+      .single();
+
+    if (error || !d || d.type !== 'facture') {
+      return reply({ error: 'Facture introuvable' }, 404);
+    }
+
+    // On ne réutilise que les résultats issus d'une génération/validation.
+    // Un ancien résultat "test" provenant de /send ne doit pas bloquer /generate.
+    const cached = d.peppol;
+
+    if (cached?.mode === 'generate') {
+      return reply({ peppol: cached });
+    }
+
+    // Identifiants Recommand propres à chaque utilisateur.
+    const configs = JSON.parse(
+      env('INTEGRATION_ACCOUNTS') || '{}'
+    );
+
+    const config = configs[uid];
+
+    if (!config) {
+      return reply(
+        {
+          error:
+            'Aucun compte fournisseur configuré pour votre utilisateur.',
+        },
+        409
+      );
+    }
+
+    if (
+      !config.recommandKey ||
+      !config.recommandSecret ||
+      !config.testCompanyId ||
+      config.peppolEnvironment !== 'test'
+    ) {
+      return reply(
+        {
+          error:
+            'Configurez une entreprise Recommand de playground et peppolEnvironment=test.',
+        },
+        409
+      );
+    }
+
+    const { data: lines, error: lineError } = await admin
+      .from('document_lines')
+      .select('*')
+      .eq('document_id', documentId)
+      .eq('user_id', uid)
+      .order('position');
+
+    if (lineError || !lines?.length) {
+      return reply(
+        { error: 'Prestations indisponibles' },
+        400
+      );
+    }
+
+    let totalCents = 0;
+
+    for (const l of lines) {
+      const net = cents(
+        Number(l.quantity) * Number(l.unit_price)
+      );
+
+      totalCents +=
+        net +
+        Math.round(
+          (net * Number(l.vat_rate)) / 100
+        );
+    }
+
+    if (
+      !Number.isSafeInteger(totalCents) ||
+      totalCents <= 0
+    ) {
+      return reply({ error: 'Montant invalide' }, 400);
+    }
+
+    const buyer = d.customer_snapshot || {};
+
+    if (
+      !buyer.peppol_id ||
+      !buyer.street ||
+      !buyer.city ||
+      !buyer.postal_code ||
+      !buyer.country ||
+      !buyer.vat
+    ) {
+      return reply(
+        {
+          error:
+            'Complétez les coordonnées Peppol du client puis recréez ou modifiez le brouillon pour actualiser son instantané.',
+        },
+        400
+      );
+    }
+
+    if (
+      lines.some(
+        (l: any) => Number(l.vat_rate) === 0
+      )
+    ) {
+      return reply(
+        {
+          error:
+            'TVA 0 % : le motif et la catégorie fiscale doivent être implémentés avant ce test. Les tests actuels prennent en charge 6, 12 et 21 %.',
+        },
+        400
+      );
+    }
+
+    const iban = String(
+      d.issuer_snapshot?.iban || ''
+    ).replace(/\s/g, '');
+
+    if (!iban) {
+      return reply(
+        {
+          error:
+            "Ajoutez l'IBAN de l'entreprise émettrice avant le test Peppol.",
+        },
+        400
+      );
+    }
+
+    /*
+     * IMPORTANT :
+     * peppol-test appelle /generate.
+     * Aucun document n'est transmis au destinataire.
+     *
+     * On garde le mécanisme integration_jobs afin de conserver
+     * l'historique des tentatives de validation.
+     */
+    const lock = await admin.rpc(
+      'begin_integration_job',
+      {
+        target_document: documentId,
+        target_user: uid,
+        target_action: action,
+        expected_document: d,
+        expected_lines: lines,
+      }
+    );
+
+    if (lock.error) {
+      console.error(
+        'begin_integration_job failed:',
+        lock.error
+      );
+
+      return reply(
+        {
+          error:
+            'Demande déjà initiée ou document indisponible. Vérifiez integration_jobs avant une nouvelle tentative.',
+        },
+        409
+      );
+    }
+
+    job = {
+      document_id: documentId,
+      action,
+    };
+
+    const payload = {
+      recipient: String(buyer.peppol_id).trim(),
+      documentType: 'invoice',
+
+      document: {
+        invoiceNumber: String(d.number || ''),
+        issueDate: d.issue_date,
+        dueDate: d.due_date,
+        currency: 'EUR',
+
+        buyer: {
+          name: String(buyer.name || ''),
+          street: String(buyer.street || ''),
+          city: String(buyer.city || ''),
+          postalZone: String(
+            buyer.postal_code || ''
+          ),
+          country: String(
+            buyer.country || ''
+          ).toUpperCase(),
+          vatNumber: String(buyer.vat || ''),
+        },
+
+        paymentMeans: [
+          {
+            iban,
+          },
+        ],
+
+        lines: lines.map((l: any) => ({
+          name: String(l.name || ''),
+          quantity: Number(l.quantity).toFixed(2),
+          unitCode: 'C62',
+          netPriceAmount: Number(
+            l.unit_price
+          ).toFixed(2),
+          vat: {
+            category: 'S',
+            percentage: Number(
+              l.vat_rate
+            ).toFixed(2),
+          },
+        })),
+      },
+    };
+
+    console.log(
+      'Recommand company:',
+      config.testCompanyId
+    );
+    console.log(
+      'Recommand action: generate'
+    );
+
+    // Pas de clé/secret dans les logs.
+    console.log(
+      'Recommand payload:',
+      JSON.stringify(payload)
+    );
+
+    const p = await external(
+      `https://app.recommand.eu/api/v1/${encodeURIComponent(
+        config.testCompanyId
+      )}/generate`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${btoa(
+            config.recommandKey +
+              ':' +
+              config.recommandSecret
+          )}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const saved = {
+      mode: 'generate',
+      requestedAt: new Date().toISOString(),
+      response: p,
+    };
+
+    const column = 'peppol';
+
+    const update = await admin
+      .from('documents')
+      .update({ [column]: saved })
+      .eq('id', documentId)
+      .eq('user_id', uid);
+
+    if (update.error) {
+      console.error(
+        'documents.peppol update failed:',
+        update.error
+      );
+
+      throw new Error(
+        "Recommand a validé le document, mais l'enregistrement du résultat dans Supabase a échoué."
+      );
+    }
+
+    const completed = await admin
+      .from('integration_jobs')
+      .update({
+        state: 'accepted',
+        result: saved,
+      })
+      .eq('document_id', documentId)
+      .eq('action', action);
+
+    if (completed.error) {
+      console.error(
+        'Integration job state could not be saved:',
+        completed.error
+      );
+    }
+
+    return reply({
+      [column]: saved,
+    });
+  } catch (e) {
+    console.error(
+      'invoice-integrations error:',
+      e
+    );
+
+    if (job) {
+      const failed = await admin
+        .from('integration_jobs')
+        .update({
+          state: 'needs_review',
+          result: {
+            mode: 'generate',
+            failedAt: new Date().toISOString(),
+            error:
+              e instanceof Error
+                ? e.message
+                : 'Erreur du service',
+          },
+        })
+        .eq('document_id', job.document_id)
+        .eq('action', job.action);
+
+      if (failed.error) {
+        console.error(
+          'Unable to mark integration job as needs_review:',
+          failed.error
+        );
+      }
+    }
+
+    return reply(
+      {
+        error:
+          e instanceof Error
+            ? e.message
+            : 'Erreur du service',
+      },
+      502
+    );
   }
 });
