@@ -88,11 +88,11 @@ const THEMES = {
   },
 };
 Object.assign(THEMES, {
-  it: {label:"Spécialiste IT", image:"assets/it.svg", tagline:"Vos services IT, simplement", footer:"Sites web<br>Infrastructure<br>Support IT", catalog:[["Support IT (heure)",1,75],["Création de site web",1,590],["Maintenance mensuelle",1,50],["Intégration API",1,250]]},
-  nettoyage: {label:"Nettoyage", image:"assets/nettoyage.svg", tagline:"Une gestion nette", footer:"Entretien<br>Nettoyage<br>Services", catalog:[["Nettoyage (heure)",1,35],["Nettoyage de vitres",1,65]]},
-  mecanicien: {label:"Mécanique automobile", image:"assets/mecanicien.svg", tagline:"Votre activité en mouvement", footer:"Entretien<br>Diagnostic<br>Réparation", catalog:[["Diagnostic automobile",1,65],["Main-d’œuvre (heure)",1,65]]},
-  photographe: {label:"Photographie", image:"assets/photographe.svg", tagline:"Chaque projet a son cadre", footer:"Portrait<br>Événements<br>Reportage", catalog:[["Séance photo",1,150],["Retouche photo (heure)",1,60]]},
-  consultant: {label:"Conseil & formation", image:"assets/consultant.svg", tagline:"Place à vos idées", footer:"Conseil<br>Formation<br>Accompagnement", catalog:[["Conseil (jour)",1,800],["Formation (heure)",1,100]]}
+  it: {label:"Spécialiste IT", image:"assets/theme-it.png", tagline:"Vos services IT, simplement", footer:"Sites web<br>Infrastructure<br>Support IT", catalog:[["Support IT (heure)",1,75],["Création de site web",1,590],["Maintenance mensuelle",1,50],["Intégration API",1,250]]},
+  nettoyage: {label:"Nettoyage", image:"assets/theme-nettoyage.png", tagline:"Une gestion nette", footer:"Entretien<br>Nettoyage<br>Services", catalog:[["Nettoyage (heure)",1,35],["Nettoyage de vitres",1,65]]},
+  mecanicien: {label:"Mécanique automobile", image:"assets/theme-mecanicien.png", tagline:"Votre activité en mouvement", footer:"Entretien<br>Diagnostic<br>Réparation", catalog:[["Diagnostic automobile",1,65],["Main-d’œuvre (heure)",1,65]]},
+  photographe: {label:"Photographie", image:"assets/theme-photographe.png", tagline:"Chaque projet a son cadre", footer:"Portrait<br>Événements<br>Reportage", catalog:[["Séance photo",1,150],["Retouche photo (heure)",1,60]]},
+  consultant: {label:"Conseil & formation", image:"assets/theme-consultant.png", tagline:"Place à vos idées", footer:"Conseil<br>Formation<br>Accompagnement", catalog:[["Conseil (jour)",1,800],["Formation (heure)",1,100]]}
 });
 let themeChoice = "plombier";
 let themeColumnReady = false;
@@ -281,7 +281,7 @@ function start(type) {
     type,
     client: null,
     date: today(),
-    due: today(),
+    due: addCalendarDays(today(), 21),
     job: "",
     lines: [],
   };
@@ -301,7 +301,7 @@ function wizard() {
             )
             .join(
               "",
-            )}<button onclick="addLine(-1)">+ Autre prestation</button><button onclick="manageCatalog()">⚙ Gérer mes prestations</button></div>${draft.lines.map((l, i) => `<div class="line-item"><label>Prestation<input aria-label="Prestation ${i + 1}" value="${esc(l.name)}" oninput="updateLine(${i},'name',this.value)"></label><label>Quantité<input aria-label="Quantité ${i + 1}" type="number" min="0.01" step="0.01" value="${l.qty}" oninput="updateLine(${i},'qty',this.value)"></label><label>Prix HTVA (€)<input aria-label="Prix ${i + 1}" type="number" min="0" step="0.01" value="${l.price}" oninput="updateLine(${i},'price',this.value)"></label><label>TVA<select aria-label="TVA ${i + 1}" onchange="updateLine(${i},'tax',this.value)">${[0, 6, 12, 21].map((t) => `<option ${t === l.tax ? "selected" : ""} value="${t}">${t} %</option>`).join("")}</select></label><button aria-label="Retirer la prestation ${i + 1}" onclick="draft.lines.splice(${i},1);render()">Retirer</button></div>`).join("") || '<div class="empty">Choisissez une prestation ci-dessus pour commencer.</div>'}<div id="totals">${totalBlock(draft)}</div><div class="notice">Les taux proposés sont indicatifs. Le taux applicable et les mentions nécessaires doivent être validés avant toute utilisation réelle.</div><div class="form-grid"><label class="field">Date du document<input type="date" value="${draft.date}" onchange="draft.date=this.value"></label><label class="field">${draft.type === "devis" ? "Devis valable jusqu’au" : "À payer pour le"}<input type="date" value="${draft.due}" onchange="draft.due=this.value"></label></div>${draft.type === "facture" ? recurrenceFields(draft.recurrence) : ""}<div class="form-footer"><button onclick="step=1;render()">← Le client</button><button class="primary" onclick="next()">Vérifier mon document →</button></div>`
+            )}<button onclick="addLine(-1)">+ Autre prestation</button><button onclick="manageCatalog()">⚙ Gérer mes prestations</button></div>${draft.lines.map((l, i) => `<div class="line-item"><label>Prestation<input aria-label="Prestation ${i + 1}" value="${esc(l.name)}" oninput="updateLine(${i},'name',this.value)"></label><label>Quantité<input aria-label="Quantité ${i + 1}" type="number" min="0.01" step="0.01" value="${l.qty}" oninput="updateLine(${i},'qty',this.value)"></label><label>Prix HTVA (€)<input aria-label="Prix ${i + 1}" type="number" min="0" step="0.01" value="${l.price}" oninput="updateLine(${i},'price',this.value)"></label><label>TVA<select aria-label="TVA ${i + 1}" onchange="updateLine(${i},'tax',this.value)">${[0, 6, 12, 21].map((t) => `<option ${t === l.tax ? "selected" : ""} value="${t}">${t} %</option>`).join("")}</select></label><button aria-label="Retirer la prestation ${i + 1}" onclick="draft.lines.splice(${i},1);render()">Retirer</button></div>`).join("") || '<div class="empty">Choisissez une prestation ci-dessus pour commencer.</div>'}<div id="totals">${totalBlock(draft)}</div><div class="notice">Les taux proposés sont indicatifs. Le taux applicable et les mentions nécessaires doivent être validés avant toute utilisation réelle.</div><div class="form-grid"><label class="field">Date du document<input type="date" value="${draft.date}" onchange="changeDraftDate(this.value)"></label><label class="field">${draft.type === "devis" ? "Devis valable jusqu’au" : "À payer pour le"}<input type="date" value="${draft.due}" onchange="draft.due=this.value;draft.dueManual=true"></label></div>${draft.type === "facture" ? recurrenceFields(draft.recurrence) : ""}<div class="form-footer"><button onclick="step=1;render()">← Le client</button><div class="verify-action"><button class="primary" aria-describedby="verify-error" onclick="next()">Vérifier mon document →</button><p id="verify-error" class="error" role="alert" tabindex="-1"></p></div></div>`
         : `<button type="button" onclick="customizeDocument()">Personnaliser le modèle</button><h2>Tout est correct ?</h2><p>Relisez votre document avant de l’enregistrer.</p><div class="review-actions"><button type="button" onclick="step=2;render();window.scrollTo(0,0)">✎ Modifier ${draft.type === "devis" ? "le devis" : "la facture"}</button><button type="button" onclick="step=1;render();window.scrollTo(0,0)">Changer de client</button></div>${documentHTML({ ...draft, id: draft.id || "Numéro attribué à l’enregistrement" })}<div class="form-footer"><button onclick="step=2;render()">← Modifier les travaux</button><button class="primary" onclick="saveDraft()">Enregistrer ${draft.type === "devis" ? "mon devis" : "ma facture"}</button></div>`
   }<p id="error" class="error" role="alert"></p></div><button class="link muted" style="margin-top:20px" onclick="if(confirm('Abandonner ce brouillon et revenir à l’accueil ?')){draft=null;go('home')}">Abandonner ce brouillon</button>`;
 }
@@ -332,19 +332,22 @@ function next() {
           !Number.isFinite(l.qty) ||
           l.qty <= 0 ||
           !Number.isFinite(l.price) ||
-          l.price < 0,
+          l.price < 0 || ![0,6,12,21].includes(l.tax),
       )
     )
       msg =
         "Ajoutez au moins une prestation avec un nom, une quantité positive et un prix valide.";
     else if (draft.recurrence && !validDate(draft.recurrence.next))
       msg = "Choisissez la prochaine date de facturation.";
-    else if (!draft.date || !draft.due || draft.due < draft.date)
+    else if (!validDate(draft.date) || !validDate(draft.due) || draft.due < draft.date)
       msg =
         "Choisissez des dates valides : la date limite doit être égale ou postérieure à la date du document.";
   }
   if (msg) {
-    $("#error").textContent = msg;
+    const target = $("#verify-error") || $("#error");
+    target.textContent = msg;
+    target.focus({preventScroll:true});
+    target.scrollIntoView({block:"nearest", behavior:"smooth"});
     return;
   }
   step++;
@@ -392,7 +395,7 @@ async function saveDraft() {
 function baseDocumentHTML(d) {
   const c = d.customer || client(d),
     biz = d.issuer || company;
-  return `<article class="document"><div class="document-heading">${logoHTML(biz.logo)}<h2>${d.type === "devis" ? "DEVIS" : "FACTURE"}</h2></div><div class="document-top"><div><strong>${esc(biz.name)}</strong><p class="muted">${esc(biz.address)}<br>${esc(biz.vat)}</p></div><div><strong>${esc(d.id)}</strong><p>Date : ${fmt(d.date)}<br>${d.type === "devis" ? "Valable jusqu’au" : "Échéance"} : ${fmt(d.due)}</p></div></div><hr style="border:0;border-top:1px solid var(--line)"><p><small class="muted">CLIENT</small><br><strong>${esc(c.name)}</strong><br>${esc(c.address)}</p><h3>${esc(d.job)}</h3>${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ""}<table><thead><tr><th>Prestation</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty * l.price))}</td></tr>`).join("")}</tbody></table>${totalBlock(d)}<p style="margin-top:25px">Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p>${paymentQR(d, biz)}<div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted" style="font-size:.8rem;margin-top:15px">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
+  return `<article class="document"><div class="document-heading">${logoHTML(biz.logo, biz.logo_shape)}<h2>${d.type === "devis" ? "DEVIS" : "FACTURE"}</h2></div><div class="document-top"><div><strong>${esc(biz.name)}</strong><p class="muted">${esc(biz.address)}<br>${esc(biz.vat)}</p></div><div><strong>${esc(d.id)}</strong><p>Date : ${fmt(d.date)}<br>${d.type === "devis" ? "Valable jusqu’au" : "Échéance"} : ${fmt(d.due)}</p></div></div><hr style="border:0;border-top:1px solid var(--line)"><p class="document-client"><small class="muted">CLIENT</small><br><strong>${esc(c.name)}</strong><br>${esc(c.address)}</p><h3>${esc(d.job)}</h3>${d.site ? `<p>Chantier : ${esc(d.site)}</p>` : ""}<table><thead><tr><th>Prestation</th><th>Qté</th><th>Prix HTVA</th><th>TVA</th><th>Total HTVA</th></tr></thead><tbody>${d.lines.map((l) => `<tr><td>${esc(l.name)}</td><td>${l.qty}</td><td>${euro(l.price)}</td><td>${l.tax} %</td><td>${euro(round(l.qty * l.price))}</td></tr>`).join("")}</tbody></table>${totalBlock(d)}<p style="margin-top:25px">Compte bancaire : ${esc(biz.iban)}<br>Communication : ${esc(d.id)}</p>${paymentQR(d, biz)}<div class="demo-stamp">DOCUMENT À VÉRIFIER AVANT UTILISATION</div><p class="muted document-legal" style="font-size:.8rem;margin-top:15px">Mentions légales et traitement TVA à valider avant utilisation professionnelle. Vérifiez les mentions applicables à votre activité.</p></article>`;
 }
 function view(id) {
   const d = docs.find((d) => d.id === id);
@@ -416,10 +419,11 @@ async function convert(id) {
       {
         ...structuredClone(d),
         id: newId("facture"),
+        dbId: null, sentAt: null, peppol: null,
         type: "facture",
         paid: false,
         date: today(),
-        due: today(),
+        due: addCalendarDays(today(), 21),
       },
       d.dbId,
     );
@@ -660,12 +664,64 @@ function authHTML() {
         </form>`;
 }
 
+function errorMessage(error) {
+  const raw = String(error?.message || error || 'Erreur inattendue.');
+  if (/PEPPOL-COMMON-R043/.test(raw)) return 'Le numéro BCE du client est invalide. Vérifiez les 10 chiffres et la clé de contrôle de son identifiant Peppol (0208:…).';
+  if (/BR-CO-09/.test(raw)) return 'Le numéro de TVA du client doit commencer par le code pays, par exemple BE pour la Belgique.';
+  if (error?.code === 'PGRST202' || /delete_unsent_invoice.*schema cache/i.test(raw)) return 'La suppression n’est pas encore activée. Exécutez le fichier 20260927_facture_ui.sql dans Supabase.';
+  if (['42703','PGRST204','42P01','PGRST205'].includes(error?.code)) return 'La base doit être mise à jour. Exécutez les migrations fournies avec cette version.';
+  if (/Failed to fetch|NetworkError|Load failed|fetch failed/i.test(raw)) return 'Connexion au service interrompue. Vérifiez votre connexion. Si un envoi était en cours, vérifiez son état avant de réessayer.';
+  if (/timeout|timed out|aborted/i.test(raw)) return 'Le service met trop de temps à répondre. Vérifiez si l’opération a abouti avant de la relancer.';
+  if (error?.status === 401 || /JWT expired|session.*expired/i.test(raw)) return 'Votre session a expiré. Reconnectez-vous puis vérifiez le résultat de la dernière opération.';
+  if (error?.code === '42501') return 'Votre compte n’a pas les droits nécessaires pour cette opération.';
+  if (error?.code === '23505') return 'Cet enregistrement existe déjà. Rechargez vos documents avant de réessayer.';
+  if (error?.code === '23503') return 'Ce document est lié à un autre enregistrement et ne peut pas être supprimé.';
+  if (/Recommand HTTP 400/.test(raw)) return 'Peppol a refusé les données du document. Consultez le détail ci-dessous, corrigez la fiche client ou la facture puis actualisez le brouillon.';
+  if (/Recommand HTTP (401|403)/.test(raw)) return 'L’accès à Recommand a été refusé. Vérifiez la clé API et les droits de l’entreprise configurée.';
+  return raw.length > 500 ? 'L’opération a échoué. Consultez le détail technique ci-dessous.' : raw;
+}
 function showError(error) {
   console.error(error);
-  toast(
-    "Enregistrement impossible : " +
-      (error?.message || "vérifiez votre connexion et réessayez."),
-  );
+  const message = errorMessage(error);
+  let target = document.querySelector('#feature-dialog[open] .application-error') || $('#action-error') || $('#error');
+  if (!target) {
+    const parent = document.querySelector('#feature-dialog[open]') || $('#main');
+    if (!parent) return toast(message);
+    target = document.createElement('div');
+    parent.prepend(target);
+  }
+  target.classList.add('application-error', 'no-print');
+  target.setAttribute('role','alert');
+  target.setAttribute('tabindex','-1');
+  target.replaceChildren();
+  const summary = document.createElement('div');
+  summary.textContent = message;
+  target.append(summary);
+  const raw = String(error?.message || '');
+  if (raw && raw !== message) {
+    const details = document.createElement('details');
+    const title = document.createElement('summary'); title.textContent = 'Détail technique';
+    const content = document.createElement('pre'); content.textContent = raw.slice(0,6000);
+    details.append(title,content); target.append(details);
+  }
+  target.focus({preventScroll:true});
+  target.scrollIntoView({block:'nearest',behavior:'smooth'});
+}
+window.addEventListener('unhandledrejection', event => { event.preventDefault(); showError(event.reason); });
+window.addEventListener('error', event => { if (event.error) showError(event.error); });
+function addCalendarDays(value, days) {
+  if (!validDate(value)) return '';
+  const date = new Date(value + 'T12:00:00Z');
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0,10);
+}
+function changeDraftDate(value) {
+  const automatic = !draft.dueManual && draft.due === addCalendarDays(draft.date,21);
+  draft.date = value;
+  if (automatic && validDate(value)) {
+    draft.due = addCalendarDays(value,21);
+    render();
+  }
 }
 
 async function saveClient({ name, address, email, ...extra }) {
@@ -699,6 +755,7 @@ async function saveCompany(values) {
     iban: values.iban?.trim() || null,
     email: values.email?.trim() || null,
     logo: values.logo || null,
+    logo_shape: values.logo_shape === "square" ? "square" : "rectangle",
     ...Object.fromEntries(["street","house_number","box","postal_code","city","country"].map(k => [k, values[k] || ""])),
     updated_at: new Date().toISOString(),
   });
@@ -909,18 +966,13 @@ function featureDialog(title, body) {
   document.getElementById("feature-dialog")?.remove();
   const dialog = document.createElement("dialog");
   dialog.id = "feature-dialog";
-  dialog.innerHTML = `<h2>${esc(title)}</h2>${body}<p><button type="button" onclick="this.closest('dialog').close()">Fermer</button></p>`;
+  dialog.innerHTML = `<h2>${esc(title)}</h2>${body}<div class="application-error no-print" role="alert"></div><p><button type="button" onclick="this.closest('dialog').close()">Fermer</button></p>`;
   document.body.append(dialog);
   dialog.showModal();
   return dialog;
 }
-function featureError(error) {
-  if (["42703", "PGRST204", "42P01", "PGRST205"].includes(error?.code))
-    toast(
-      "Exécutez la migration 20260926_upgrade.sql dans Supabase pour activer ces nouveautés.",
-    );
-  else showError(error);
-}
+function featureError(error) { showError(error); }
+
 function manageCatalog() {
   const entries = structuredClone(catalogForTheme());
   const dialog = featureDialog(
@@ -1211,9 +1263,9 @@ function safeLogo(value) {
     value.length < 600000
   );
 }
-function logoHTML(value) {
+function logoHTML(value, shape = company.logo_shape) {
   return safeLogo(value)
-    ? `<img class="company-logo" src="${value}" alt="Logo de l’entreprise">`
+    ? `<img class="company-logo logo-${shape === 'square' ? 'square' : 'rectangle'}" src="${value}" alt="Logo de l’entreprise">`
     : "";
 }
 function companyView() {
@@ -1221,12 +1273,16 @@ function companyView() {
   return originalCompanyView()
     .replace(
       '<label class="field">Nom de l’entreprise',
-      `<fieldset class="logo-editor"><legend>Logo de l’entreprise</legend><div id="logo-preview">${logoHTML(logo) || "<p>Aucun logo sélectionné.</p>"}</div><label class="field">Choisir un logo (PNG, JPEG ou WebP, maximum 2 Mo)<input type="file" accept="image/png,image/jpeg,image/webp" onchange="selectLogo(this.files[0])"></label><button type="button" onclick="removeLogo()">Retirer le logo</button><p class="muted">Le logo sera affiché en haut des nouvelles factures et des devis. Enregistrez vos coordonnées pour conserver ce choix.</p></fieldset><label class="field">Nom de l’entreprise`,
+      `<fieldset class="logo-editor"><legend>Logo de l’entreprise</legend><div id="logo-preview">${logoHTML(logo) || "<p>Aucun logo sélectionné.</p>"}</div><label class="field">Format du logo<select name="logo_shape" onchange="previewLogoShape(this.value)"><option value="rectangle" ${company.logo_shape !== 'square' ? 'selected' : ''}>Rectangle — maximum 190 × 100 px</option><option value="square" ${company.logo_shape === 'square' ? 'selected' : ''}>Carré — 120 × 120 px</option></select></label><label class="field">Choisir un logo (PNG, JPEG ou WebP, maximum 2 Mo)<input type="file" accept="image/png,image/jpeg,image/webp" onchange="selectLogo(this.files[0])"></label><button type="button" onclick="removeLogo()">Retirer le logo</button><p class="muted">Le logo sera affiché en haut des nouvelles factures et des devis. Enregistrez vos coordonnées pour conserver ce choix.</p></fieldset><label class="field">Nom de l’entreprise`,
     )
     .replace(
       'name="iban"',
       'placeholder="BE12 4567 1245 1245 (à vérifier)" name="iban"',
     );
+}
+function previewLogoShape(shape) {
+  const preview = $('#logo-preview');
+  if (preview) preview.innerHTML = logoHTML(logoDirty ? logoDraft : company.logo, shape) || '<p>Aucun logo sélectionné.</p>';
 }
 async function selectLogo(file) {
   if (!file) return;
@@ -1239,7 +1295,7 @@ async function selectLogo(file) {
   logoLoading = true;
   try {
     const image = await createImageBitmap(file);
-    const scale = Math.min(1, 640 / image.width, 320 / image.height);
+    const scale = Math.min(1, 640 / image.width, 640 / image.height);
     const canvas = document.createElement("canvas");
     canvas.width = Math.max(1, Math.round(image.width * scale));
     canvas.height = Math.max(1, Math.round(image.height * scale));
@@ -1253,7 +1309,7 @@ async function selectLogo(file) {
     if (account?.id !== owner) return;
     logoDraft = data;
     logoDirty = true;
-    $("#logo-preview").innerHTML = logoHTML(data);
+    previewLogoShape($('[name="logo_shape"]')?.value || company.logo_shape);
   } catch (error) {
     toast(error.message || "Impossible de lire cette image.");
   } finally {
@@ -1313,13 +1369,31 @@ function documentHTML(d) {
   return baseDocumentHTML(d).replace('class="document"', `class="document template-${a.template} font-${a.font}" style="--invoice-accent:${a.color}"`);
 }
 function documentActions(d) {
-  return `<section class="no-print panel"><div class="filter-row"><strong>${d.sentAt ? 'Envoyé le ' + new Date(d.sentAt).toLocaleString('fr-BE') : 'Enregistré'}</strong><button onclick="sendDocument('${d.id}')">${d.sentAt ? 'Renvoyer par e-mail' : 'Envoyer par e-mail'}</button><button onclick="customizeDocument('${d.id}')">Modèle et aperçu</button>${!d.sentAt && !d.paid && !d.peppol ? `<button onclick="editDocument('${d.id}')">Modifier le contenu</button>` : ''}${d.type === 'facture' ? `<button onclick="sendPeppolTest('${d.id}')">Peppol · test</button>` : ''}</div>${d.peppol ? `<p>Peppol test : demande enregistrée auprès du fournisseur. Vérifiez la livraison dans son tableau de bord.</p>` : ''}</section>`;
+  return `<section class="no-print panel"><div class="filter-row"><strong>${d.sentAt ? 'Envoyé le ' + new Date(d.sentAt).toLocaleString('fr-BE') : 'Enregistré'}</strong><button onclick="sendDocument('${d.id}')">${d.sentAt ? 'Renvoyer par e-mail' : 'Envoyer par e-mail'}</button><button onclick="customizeDocument('${d.id}')">Modèle et aperçu</button>${!d.sentAt && !d.paid && !d.peppol ? `<button onclick="editDocument('${d.id}')">Modifier le contenu</button>${d.type === 'facture' ? `<button class="danger-button" onclick="deleteInvoice('${d.id}')">Supprimer la facture</button>` : ''}` : ''}${d.type === 'facture' ? `<button onclick="sendPeppolTest('${d.id}')">Peppol · test</button>` : ''}</div>${d.peppol ? `<p>Peppol test : demande enregistrée auprès du fournisseur. Vérifiez la livraison dans son tableau de bord.</p>` : ''}<div id="action-error" class="application-error" role="alert"></div></section>`;
+}
+async function deleteInvoice(id) {
+  const d = docs.find(item => item.id === id);
+  if (!d || featureBusy || busy) return;
+  if (d.type !== 'facture' || d.sentAt || d.paid || d.peppol) return showError(new Error('Seule une facture non envoyée et non payée peut être supprimée.'));
+  if (!confirm('Supprimer définitivement la facture ' + d.id + ' ? Son numéro ne sera pas réutilisé.')) return;
+  featureBusy = true;
+  try {
+    const {data,error} = await db.rpc('delete_unsent_invoice',{target_document:d.dbId});
+    if (error) throw error;
+    if (data?.deleted !== true) throw new Error('Suppression non confirmée. Rechargez vos documents.');
+    docs = docs.filter(item => item.dbId !== d.dbId);
+    reminders = reminders.filter(item => item.document_id !== d.dbId);
+    for (const source of docs) if (source.converted === d.id) delete source.converted;
+    if (draft?.dbId === d.dbId) draft = null;
+    go('docs'); toast('Facture supprimée.');
+  } catch(error) { showError(error); }
+  finally { featureBusy = false; }
 }
 function editDocument(id) {
   const d = docs.find(x => x.id === id);
   if (!d || d.sentAt || d.paid || d.peppol) return toast('Ce document ne peut plus être modifié.');
   if (draft) return toast('Terminez ou abandonnez le brouillon en cours.');
-  draft = structuredClone(d); delete draft.customer; step = 2; go('wizard');
+  draft = structuredClone(d); draft.dueManual = true; delete draft.customer; step = 2; go('wizard');
 }
 function customizeDocument(id) {
   appearanceTarget = id || null;

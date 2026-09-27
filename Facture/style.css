@@ -2496,3 +2496,80 @@ html[data-theme="it"],html[data-theme="nettoyage"],html[data-theme="mecanicien"]
 @media(max-width:760px){.dash-kpis{grid-template-columns:1fr}.dash-kpi{min-height:125px}.dash-period{width:100%}.dash-period button{flex:1;padding:7px 5px}.dash-card{padding:18px}.dash-bars{height:200px}.dash-bar-track{height:135px;width:85%}.dash-payment-grid{grid-template-columns:1fr;justify-items:center}.dash-payment-legend{width:100%}.dash-products-low{grid-template-columns:1fr}.dashboard-page{gap:16px}}
 /* Dashboard complet, styles limités aux nouveaux blocs. */
 .dash-scroll{overflow:auto;max-width:100%}.dash-scroll table{width:100%;border-collapse:collapse;font-size:.8rem}.dash-scroll th,.dash-scroll td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}.dash-scroll th{font-size:.7rem;color:var(--muted)}.dash-scroll td:first-child{min-width:140px;overflow-wrap:anywhere}.dash-chart-scroll{overflow-x:auto}.dash-comparison{display:grid;grid-template-columns:repeat(var(--cols),minmax(46px,1fr));gap:8px;min-width:calc(var(--cols)*54px)}.dash-chart-column{padding:0!important;border:0!important;background:transparent!important;display:flex;flex-direction:column;gap:10px;font-size:.7rem;min-width:0}.dash-chart-bars{height:210px;display:flex;align-items:flex-end;gap:3px;width:100%;border-bottom:1px solid var(--line)}.dash-chart-bars i{display:block;width:33%;border-radius:4px 4px 0 0}.dash-chart-bars .series-0{background:var(--green)}.dash-chart-bars .series-1{background:#b7c9b9}.dash-chart-bars .series-2{background:#d8a83e}.dash-chart-legend{display:flex;gap:20px;flex-wrap:wrap;font-size:.8rem;margin-bottom:24px}.dash-chart-legend span:nth-child(1){color:var(--green)}.dash-chart-legend span:nth-child(2){color:#687b6c}.dash-chart-legend span:nth-child(3){color:#956d0a}.dash-recurring-value{font-size:2rem;font-weight:700;color:var(--green)}.dash-recurring-value small{font-size:.8rem}.dash-summary li{margin:16px 0;line-height:1.7}.dashboard-page details{margin-top:16px}.dashboard-page summary{cursor:pointer;font-size:.85rem}.dashboard-page button:focus-visible{outline:3px solid #d8a83e;outline-offset:3px}.dashboard-page .dash-kpi strong{font-size:clamp(1.1rem,1.65vw,1.6rem);overflow-wrap:anywhere}.dashboard-page .dash-heading{align-items:center}#feature-dialog:has(.dash-scroll){width:min(1050px,95vw);max-width:95vw}.dashboard-page{min-width:0}@media(max-width:760px){.dash-chart-bars{height:165px}.dash-chart-legend{gap:10px}.dashboard-page .dash-kpi strong{font-size:1.6rem}.dash-heading>.primary{width:100%}}
+
+/* Impression, identité et retours applicatifs — 27/09/2026 */
+.document .document-client {
+  margin: 16px 0 20px auto;
+  width: min(100%, 340px);
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.company-logo.logo-square,
+.document-heading .company-logo.logo-square {
+  width: 120px;
+  height: 120px;
+  max-width: 120px;
+  max-height: 120px;
+  object-fit: contain;
+}
+.company-logo.logo-rectangle,
+.document-heading .company-logo.logo-rectangle {
+  width: auto;
+  height: auto;
+  max-width: 190px;
+  max-height: 100px;
+  object-fit: contain;
+}
+.verify-action {display:flex; flex-direction:column; align-items:flex-end; max-width:430px;}
+.verify-action .error {width:100%; text-align:right; margin:10px 0 0; line-height:1.5;}
+.verify-action .error:empty,.application-error:empty {display:none;}
+.application-error {margin:16px 0; padding:14px 16px; border:1px solid #dca8a2; border-left:4px solid #a52b20; border-radius:8px; background:#fff4f2; color:#84271f; font-size:.92rem; line-height:1.5; overflow-wrap:anywhere;}
+.application-error details {margin-top:10px;}
+.application-error pre {white-space:pre-wrap; overflow-wrap:anywhere; max-height:220px; overflow:auto; font-size:.78rem;}
+.application-error:focus,.verify-action .error:focus {outline:2px solid #a52b20; outline-offset:3px;}
+.danger-button {color:#a52b20; border-color:#dca8a2;}
+@media(max-width:650px) {.verify-action {max-width:100%; width:100%;} .verify-action button {width:100%;}}
+@media print {
+  @page {size:A4; margin:14mm;}
+  html, body, .layout, .workspace, main, #main {
+    background:#fff !important;
+    background-image:none !important;
+    color:#18231d;
+    height:auto !important;
+    min-height:0 !important;
+    max-height:none !important;
+    width:auto !important;
+    min-width:0 !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding:0 !important;
+    box-shadow:none !important;
+    overflow:visible !important;
+  }
+  .layout, .workspace, main {display:block !important;}
+  html::before, html::after, body::before, body::after,
+  .layout::before, .layout::after, .workspace::before, .workspace::after,
+  main::before, main::after {content:none !important; display:none !important;}
+  header, aside, dialog, dialog[open], .no-print, #toast, .skip,
+  .steps, .intro, .form-footer, #error, .application-error {display:none !important;}
+  dialog::backdrop {background:transparent !important;}
+  #main > .panel {padding:0 !important; border:0 !important; background:white !important;}
+  .document {background:white !important; border:0 !important; border-radius:0; box-shadow:none; padding:0 !important; margin:0; max-width:none; font-size:10pt; line-height:1.35;}
+  .document-heading, .document-top, .document-client, .total, .payment-qr, .demo-stamp, .document-legal {break-inside:avoid;}
+  .document-heading {margin-bottom:10px;}
+  .document-top {display:flex; flex-direction:row; align-items:baseline;}
+  .document p {margin-top:8px; margin-bottom:8px;}
+  .document .document-client {margin:12px 0 16px auto;}
+  .document table {font-size:9pt; margin-top:14px;}
+  .document th,.document td {padding:7px 6px; overflow-wrap:anywhere;}
+  .document th:first-child,.document td:first-child {width:46%;}
+  .document thead {display:table-header-group;}
+  .document tr {break-inside:avoid;}
+  .document h3 {break-after:avoid;}
+  .document .total {margin-top:12px;}
+  .document .payment-qr {gap:16px; margin-top:14px; flex-wrap:nowrap;}
+  .document .payment-qr svg {width:35mm; height:35mm;}
+  .document .demo-stamp {margin-top:14px; padding:8px; break-after:avoid;}
+  .document .document-legal {font-size:8pt !important; margin-top:8px !important;}
+}
+@media print { *:focus {outline:none !important;} }
