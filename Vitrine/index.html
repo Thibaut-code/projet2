@@ -6,9 +6,11 @@
 <title>Orbytek | Sites web, applications & support IT sur mesure</title>
 <meta name="description" content="Orbytek, par Thibaut Courtois : sites web, applications, intégrations et support IT à 60 €/h. Proximité, contact direct et solutions sur mesure.">
 <!-- Canonical URL: run Set-SiteUrl.ps1 when your final URL is known. -->
-<meta name="theme-color" content="#101010">
+<meta name="theme-color" content="#090c0d">
 
 <link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="cosmos.css">
+<script src="cosmos.js" defer></script>
 </head>
 <body>
 <a class="skip-link" href="#contenu">Aller au contenu</a>
@@ -17,28 +19,30 @@
 <div class="navlinks">
 <a href="index.html" aria-current="page">Accueil</a>
 <a href="index.html#services">Services</a>
-<a href="tarifs.html" >Tarifs</a>
 <a href="creations.html" >Créations</a>
+<a href="index.html#methode">Comment ça se passe</a>
+<a href="tarifs.html" >Tarifs</a>
 <a href="index.html#apropos">À propos</a>
 <a class="navcta" href="index.html#contact">Parlons de votre projet ↗</a>
 </div></nav></header>
 <main id="contenu">
-<section class="hero" aria-labelledby="hero-title">
-<img class="hero-image" src="architecture.webp" alt="" fetchpriority="high" width="1536" height="1024">
+<section class="hero cosmos-hero" aria-labelledby="hero-title">
+<div class="hero-haze" aria-hidden="true"></div>
 <div class="wrap">
-<div class="hero-copy">
-<p class="eyebrow">Orbytek · Thibaut Courtois</p>
-<h1 id="hero-title">Votre idée.<br><em>Votre solution.</em><br>Votre interlocuteur.</h1>
-<p class="hero-subtitle">Sites web · Applications · Intégrations · Support IT</p>
-<div class="accent-rule" aria-hidden="true">
+<div class="hero-heading"><p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Orbytek · Le digital à votre dimension</p>
+<h1 id="hero-title">Votre projet web <em>commence ici.</em></h1></div>
+<div class="hero-grid"><div class="hero-copy">
+<p class="hero-subtitle">Des solutions pensées pour vous.<br>Un contact direct, à chaque étape.</p>
+<p class="lead">Sites web, applications et intégrations sur mesure pour les indépendants et les entreprises. Avec moi, Thibaut Courtois, vos idées prennent vie et vos outils vous simplifient le quotidien.</p>
+<div class="hero-actions"><a class="button" href="creations.html">Découvrir mes créations <span aria-hidden="true">↗</span></a><a class="button button-outline" href="#contact">Parlons de votre projet <span aria-hidden="true">→</span></a></div>
+<p class="micro">Proximité. Contact direct. Sur mesure.</p>
 </div>
-<p class="lead">Avec Orbytek, vous échangez directement avec moi, Thibaut Courtois. Je prends le temps de comprendre votre métier pour créer une solution qui vous ressemble.</p>
-<a class="button" href="#contact">Parlons de votre projet <span aria-hidden="true">→</span>
-</a>
-<p class="micro">Pour les indépendants, les artisans et les entreprises.</p>
-</div>
-</div>
-</section>
+<div class="planet-scene" role="img" aria-label="Planète technologique cuivrée, entourée d’orbites et de connexions lumineuses">
+<div class="planet-fallback" aria-hidden="true"></div><canvas id="planet-canvas" aria-hidden="true"></canvas>
+<div class="planet-caption" aria-hidden="true"><span class="status-dot"></span> Vos idées, connectées.</div>
+</div></div>
+<div class="hero-controls"><a class="scroll-cue" href="#services">Explorez les possibilités <span aria-hidden="true">↓</span></a><button class="motion-toggle" type="button" aria-pressed="false" hidden>Mettre les animations en pause</button></div>
+</div></section>
 <div class="wrap">
 <div class="hero-bottom">
 <span>01 — Proximité</span>
