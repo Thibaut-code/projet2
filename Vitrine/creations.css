@@ -1,0 +1,35 @@
+.portfolio-page .page-intro { position:relative; overflow:hidden; padding:88px 0 72px; }
+.portfolio-page .page-intro:before { content:''; position:absolute; width:520px; height:520px; right:-150px; top:-210px; border:1px solid #d8a57430; border-radius:50%; box-shadow:0 0 0 70px #d8a57405,0 0 0 140px #d8a57404; pointer-events:none; }
+.portfolio-page .page-intro .wrap { position:relative; }
+.portfolio-page .page-intro h1 { font-size:clamp(46px,6.5vw,88px); line-height:1.06; letter-spacing:-2px; margin:20px 0 28px; }
+.portfolio-page .page-intro p:last-child { font-size:18px; max-width:650px; }
+.portfolio-page .section { padding:65px 0 0; }
+.project-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:32px; }
+.creation-card { min-width:0; position:relative; border:1px solid #ffffff18; border-radius:22px; background:linear-gradient(145deg,#1b2021,#101415); overflow:hidden; transform:perspective(1200px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg)); transition:transform .35s,border-color .35s,box-shadow .35s,opacity .7s; }
+.creation-card:hover,.creation-card:focus-within { border-color:var(--project-accent); box-shadow:0 20px 55px #0005; }
+.creation-preview { display:block; margin:18px 18px 0; border:1px solid #ffffff20; border-radius:12px; overflow:hidden; background:#fff; }
+.browser-bar { height:36px; display:flex; align-items:center; justify-content:space-between; gap:12px; background:#23292b; color:#ddd; padding:0 13px; font-size:12px; }
+.browser-dots { display:flex; gap:5px; }
+.browser-dots i { width:6px; height:6px; border-radius:50%; background:#90877c; }
+.browser-dots i:first-child { background:var(--project-accent); }
+.preview-label { font-size:12px; letter-spacing:1px; color:#afa79d; }
+.preview-window { position:relative; aspect-ratio:1.65; overflow:hidden; }
+.preview-window iframe { display:block; width:1440px; height:960px; border:0; transform:scale(var(--preview-scale,.38)); transform-origin:0 0; pointer-events:none; background:#fff; }
+.preview-window:after { content:''; position:absolute; inset:0; background:linear-gradient(0deg,#070b0d70,transparent 48%); transition:background .3s; }
+.preview-open { position:absolute; z-index:1; bottom:20px; left:50%; transform:translate(-50%,8px); background:#0e1415ee; color:white; border:1px solid #ffffff55; padding:10px 20px; border-radius:50px; font-size:14px; white-space:nowrap; opacity:0; transition:opacity .3s,transform .3s; }
+.creation-preview:hover .preview-open,.creation-preview:focus-visible .preview-open { opacity:1; transform:translate(-50%,0); }
+.creation-copy { padding:27px 30px 32px; }
+.creation-meta { display:flex; justify-content:space-between; align-items:center; color:var(--project-accent); font-size:14px; }
+.creation-number { font:italic 28px Georgia,serif; opacity:.75; }
+.creation-copy h3 { font:400 clamp(28px,3vw,38px) Georgia,serif; letter-spacing:-.7px; margin:12px 0 18px; }
+.creation-promise { font-size:19px; color:#f1e8de; line-height:1.45; margin:0 0 14px; }
+.creation-description { color:#bcb6af; font-size:16px; line-height:1.7; margin:0 0 22px; }
+.creation-tags { display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0 0 26px; list-style:none; }
+.creation-tags li { padding:5px 11px; border:1px solid #ffffff1a; border-radius:30px; color:#cec7c0; font-size:14px; }
+.creation-link { display:inline-block; color:var(--project-accent); font-size:16px; font-weight:600; padding:8px 0; border-bottom:1px solid currentColor; transition:letter-spacing .3s; }
+.creation-link:hover { letter-spacing:.5px; }
+.portfolio-note { color:#b7b1a9; font-size:14px; margin:25px 0 0; }
+.creation-card.entering { opacity:0; transform:translateY(25px); }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+@media(max-width:760px) { .project-grid { grid-template-columns:1fr; gap:25px; } .creation-copy { padding:23px; } .portfolio-page .page-intro { padding:55px 0; } .portfolio-page .page-intro h1 { letter-spacing:-1px; } .preview-open { opacity:1; transform:translate(-50%,0); } }
+@media(prefers-reduced-motion:reduce) { .creation-card,.creation-link,.preview-open { transition:none; transform:none; } .creation-card.entering { opacity:1; transform:none; } }
