@@ -780,6 +780,7 @@ function readDocument(row, lines) {
     type: row.type,
     client: row.client_id,
     date: row.issue_date,
+    vatDate: row.vat_date || null,
     due: row.due_date,
     job: row.job,
     site: row.site,
@@ -849,6 +850,7 @@ async function loadData() {
     if (converted) doc.converted = converted.id;
   }
   await loadReminders(userId);
+  await loadVAT(userId);
   render();
 }
 
@@ -1698,6 +1700,7 @@ function dashboard() {
   const card=(title,body)=>`<section class="dash-card"><div class="dash-card-head"><h2>${title}</h2></div>${body}</section>`;
   const clientRows=cs.map(c=>[esc(c.name),euro(c.total),c.count,`${ca?(c.total/ca*100).toFixed(1):0} %`]);
   return `<section class="dashboard-page">${heading}<p class="dash-footnote">CA et prestations hors TVA · Créances et encaissements TTC · Paiements déclarés manuellement. Les KPI mensuels et annuels portent sur aujourd’hui ; les blocs ci-dessous suivent la période choisie.</p>
+  ${vatDashboard()}
   <div class="dash-kpis">${kpi('month','CA ce mois · HT',dashSum(month),dashTrend(dashSum(month),dashSum(previous))+' vs mois précédent à date','featured')}${kpi('unpaid','À encaisser · TTC',dashSum(unpaid,'total'),unpaid.length+' factures · toutes dates')}${kpi('late','En retard · TTC',dashSum(late,'total'),late.length+' factures · toutes dates','danger')}${kpi('average','Panier moyen du mois · HT',avg,dashTrend(avg,prevAvg)+' vs mois précédent à date')}${kpi('year','CA cette année · HT',dashSum(year),dashTrend(dashSum(year),dashSum(previousYear))+' vs année précédente à date')}</div>
   ${card(`Chiffre d’affaires · ${fmt(dashISO(start))} — ${fmt(dashISO(end))}`,`<div class="dash-chart-legend"><span>● Facturé HT</span><span>● Même période N−1 HT</span><span>● Encaissé TTC daté</span></div><div class="dash-chart-scroll"><div class="dash-comparison" style="--cols:${buckets.length}">${buckets.map(b=>`<button class="dash-chart-column" onclick="dashBucketDetail('${dashISO(b.start)}','${dashISO(b.end)}')" aria-label="${esc(b.label)} : facturé ${euro(b.total)}, précédent ${euro(b.prior)}, encaissé ${euro(b.received)}" title="Facturé HT : ${euro(b.total)} · N−1 : ${euro(b.prior)} · Encaissé TTC : ${euro(b.received)}"><span class="dash-chart-bars">${[b.total,b.prior,b.received].map((n,i)=>`<i class="series-${i}" style="height:${n/max*100}%"></i>`).join('')}</span><small>${esc(b.label)}</small></button>`).join('')}</div></div><p class="dash-footnote">Cliquez sur une date pour le détail. Total facturé : <b>${euro(ca)} HT</b>. ${unknown.length} facture(s) payée(s) sans date exclue(s) de la série d’encaissements.</p>`)}
   <div class="dash-two">${card('Top clients',dashTable(['Client','CA HT','Factures','Part'],clientRows.slice(0,5))+`<details><summary>Voir tous les clients (${cs.length})</summary>${dashTable(['Client','CA HT','Factures','Part'],clientRows)}</details><p class="dash-insight">Vos ${Math.min(3,cs.length)} premiers clients représentent <strong>${concentration.toFixed(1)} %</strong> du CA sélectionné.</p>`)}

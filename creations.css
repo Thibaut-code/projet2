@@ -1,3 +1,5 @@
+.brand img[src="orbytek-logo.png"] { filter:none !important; mix-blend-mode:normal !important; background:transparent; }
+
 .portfolio-page .page-intro { position:relative; overflow:hidden; padding:88px 0 72px; }
 .portfolio-page .page-intro:before { content:''; position:absolute; width:520px; height:520px; right:-150px; top:-210px; border:1px solid #d8a57430; border-radius:50%; box-shadow:0 0 0 70px #d8a57405,0 0 0 140px #d8a57404; pointer-events:none; }
 .portfolio-page .page-intro .wrap { position:relative; }

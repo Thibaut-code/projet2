@@ -1,5 +1,19 @@
 # Facture Facile avec Supabase
 
+## TVA belge trimestrielle — mise à jour du 30 septembre 2026
+
+Exécutez `supabase/migrations/20260930_vat.sql` dans le SQL Editor de Supabase, puis publiez `vat.js`, `app.js`, `index.html` et `style.css` ensemble. La migration ajoute `documents.vat_date` et la table `vat_purchases`, avec accès isolé par utilisateur. Sans migration, le dashboard affiche un message et ne présente pas de solde calculé à partir d’achats manquants.
+
+Dans le dashboard, **Préparer ma TVA** possède son propre sélecteur d’année et de trimestre. Les factures enregistrées, payées ou non, alimentent les ventes ; les devis sont exclus. La date de facture est utilisée par défaut. **Journal des ventes / dates TVA** permet de renseigner la date d’exigibilité sans modifier la facture. Vérifiez cette date selon l’opération et les éventuels acomptes.
+
+Saisissez les achats nationaux ordinaires avec référence fournisseur, date de facture, date de déduction, montant HT, TVA facturée, pourcentage de déduction et catégorie 81/82/83. Les montants de TVA sont ceux du justificatif, pour respecter ses arrondis. Pour plusieurs taux ou catégories, ajoutez plusieurs lignes de même référence. Les achats sont modifiables et supprimables après confirmation. Conservez les justificatifs séparément ; ils ne sont pas téléversés ici.
+
+La préparation propose les grilles 01/02/03, 54, 59, 81/82/83 et un solde estimé 71 **ou** 72. La TVA non déductible est incluse dans les grilles d’achats 81–83. Les ventes à 0 %, clients étrangers identifiés et lignes non prises en charge sont signalées et exclues des grilles. Un pays absent doit être vérifié : le taux ne prouve pas à lui seul une vente nationale. Les avoirs, opérations intracommunautaires, autoliquidations, importations, acomptes et régularisations demandent un traitement complémentaire avec votre comptable. Le solde affiché est limité aux données prises en charge, et ne tient pas compte du compte TVA auprès du SPF Finances.
+
+L’export CSV contient les grilles proposées, les ventes (y compris celles à examiner) et les achats du trimestre. C’est un document de travail pour contrôle, pas un fichier de déclaration importable dans Intervat. Utilisez les liens vers Intervat, les notices et le calendrier officiel pour finaliser le dépôt et le paiement. Aucun dépôt automatique n’est effectué.
+
+Références : [modèles et notices SPF Finances](https://finances.belgium.be/fr/E-services/Intervat/modeles-des-declarations-et-notices), [calendrier TVA](https://financien.belgium.be/nl/node/1593).
+
 1. Exécuter dans Supabase le SQL des tables `companies`, `clients`, `documents`, `document_lines`, puis celui de `profiles` si vous souhaitez les profils utilisateurs.
 2. Dans **Project Settings > API Keys**, relever l'URL du projet et la clé **publishable** (`sb_publishable_...`) ou l'ancienne clé **anon**. Les renseigner dans `config.js`. Ne jamais utiliser de clé **secret** ou **service_role** dans un site GitHub Pages.
 3. Dans **Authentication > Providers > Email**, activer la connexion par e-mail. Dans **Authentication > URL Configuration**, définir l'URL publique GitHub Pages comme `Site URL` et l'ajouter dans `Redirect URLs` (par exemple `https://UTILISATEUR.github.io/DEPOT/`). Conserver la confirmation e-mail si souhaitée.
