@@ -1477,6 +1477,12 @@ function downloadAttachment(blob,name) {
 function base64UTF8(value) {
   return btoa(Array.from(new TextEncoder().encode(value),b=>String.fromCharCode(b)).join(''));
 }
+function documentMailto(recipient,subject,body) {
+  recipient=String(recipient).trim();
+  if (!recipient || /[\r\n]/.test(recipient)) throw Error('Adresse e-mail invalide.');
+  const text=String(body).replace(/\r\n|\r|\n/g,'\r\n');
+  return `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(String(subject).replace(/[\r\n]/g,' '))}&body=${encodeURIComponent(text)}`;
+}
 async function emailDraftBlob(pdf,filename,recipient,subject,body) {
   if (/[\r\n]/.test(recipient)) throw Error('Adresse e-mail invalide.');
   const bytes = new Uint8Array(await pdf.arrayBuffer());
@@ -1494,23 +1500,22 @@ async function emailDraftBlob(pdf,filename,recipient,subject,body) {
 function sendDocument(id) {
   const d = docs.find(x => x.id === id); if (!d) return;
   const c = d.customer || client(d);
-  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Le PDF sera généré et joint au message préparé. Vous choisirez ensuite votre messagerie.</p><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Préparer l’e-mail avec le PDF</button></form><div id="send-confirm" aria-live="polite"></div>`);
+  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Préparez votre message avec le destinataire et le PDF. Vous pourrez ouvrir votre messagerie ou télécharger un fichier e-mail avec le PDF déjà joint.</p><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Préparer le message et le PDF</button></form><div id="send-confirm" aria-live="polite"></div>`);
   $('#send-form').onsubmit = async e => {
     e.preventDefault(); if(featureBusy)return; featureBusy=true;
     const submit=e.target.querySelector('button');submit.disabled=true;submit.textContent='Génération du PDF…';
-    const f = new FormData(e.target), recipient=String(f.get('recipient')), subject=String(f.get('subject')), body=String(f.get('body'));
+    const f = new FormData(e.target), recipient=String(f.get('recipient')).trim(), subject=String(f.get('subject')), body=String(f.get('body'));
     try {
       const pdf=await documentPDF(d), filename=documentFilename(d)+'.pdf';
-      const file=new File([pdf],filename,{type:'application/pdf'});
       const eml=await emailDraftBlob(pdf,filename,recipient,subject,body);
-      const canShare=!!navigator.canShare?.({files:[file]});
-      $('#send-confirm').innerHTML=`<p>PDF prêt : ${esc(filename)}</p>${canShare ? '<button class="primary" id="share-document">Ouvrir une messagerie avec le PDF</button><p>Choisissez votre messagerie dans le partage. Vérifiez le destinataire, l’objet et le message avant l’envoi.</p>' : ''}<button id="download-email">Télécharger l’e-mail avec le PDF joint (.eml)</button><p>Ouvrez le fichier .eml dans une messagerie compatible. Selon votre logiciel, utilisez « Modifier comme nouveau message » avant l’envoi.</p><button id="download-document-pdf">Télécharger uniquement le PDF</button><p>Après l’envoi effectif dans votre messagerie :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
-      if(canShare) $('#share-document').onclick=async()=>{try{await navigator.share({files:[file],title:subject,text:body});}catch(error){if(error.name!=='AbortError')featureError(error);}};
+      const mailto=documentMailto(recipient,subject,body);
+      $('#send-confirm').innerHTML=`<p>Message prêt pour <strong>${esc(recipient)}</strong> · PDF : ${esc(filename)}</p><p><button class="primary" id="open-document-email" type="button">Ouvrir ma messagerie</button></p><p>Le destinataire, l’objet et le message seront préremplis dans votre messagerie par défaut. Pour Outlook, définissez-le comme application de messagerie par défaut.</p><p><strong>Ajoutez le PDF avant d’envoyer :</strong> téléchargez-le ci-dessous, puis joignez-le au message.</p><button id="download-document-pdf">Télécharger le PDF à joindre</button><details><summary>Préparer un fichier e-mail avec le PDF déjà joint</summary><p><button id="download-email">Télécharger l’e-mail avec le PDF joint (.eml)</button></p><p>Ce fichier contient le destinataire, l’objet, le message et le PDF. Ouvrez-le dans une messagerie compatible. Selon votre logiciel, utilisez « Modifier comme nouveau message » avant l’envoi.</p></details><p>Après l’envoi effectif dans votre messagerie :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
+      $('#open-document-email').onclick=()=>{window.location.href=mailto;};
       $('#download-email').onclick=()=>downloadAttachment(eml,documentFilename(d)+'.eml');
       $('#download-document-pdf').onclick=()=>downloadAttachment(pdf,filename);
       $('#confirm-document-send').onclick=()=>confirmDocumentSend(d,recipient);
     } catch(error) { featureError(error); }
-    finally {featureBusy=false;submit.disabled=false;submit.textContent='Préparer l’e-mail avec le PDF';}
+    finally {featureBusy=false;submit.disabled=false;submit.textContent='Préparer le message et le PDF';}
   };
 }
 async function confirmDocumentSend(d,recipient) {

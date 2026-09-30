@@ -1,5 +1,11 @@
 # Facture Facile avec Supabase
 
+## Ouverture de messagerie — correction du destinataire
+
+Après **Préparer le message et le PDF**, le bouton **Ouvrir ma messagerie** utilise un lien `mailto:` avec destinataire, objet et message encodés. Configurez Outlook comme messagerie par défaut pour ouvrir le message dans Outlook. Téléchargez le PDF et joignez-le au message avant envoi. Le partage Windows de PDF a été retiré de ce parcours, car il ne transmet pas de destinataire.
+
+L’option `.eml` reste disponible et contient le destinataire, l’objet, le message et le PDF joint ; sa prise en charge dépend de la messagerie. Aucun envoi n’est automatique. Les champs du lien et la pièce jointe du fichier EML ont été vérifiés par `node tests/email.test.cjs` ; l’ouverture dans Outlook réel reste à vérifier sur votre poste.
+
 ## TVA belge trimestrielle — mise à jour du 30 septembre 2026
 
 Exécutez `supabase/migrations/20260930_vat.sql` dans le SQL Editor de Supabase, puis publiez `vat.js`, `app.js`, `index.html` et `style.css` ensemble. La migration ajoute `documents.vat_date` et la table `vat_purchases`, avec accès isolé par utilisateur. Sans migration, le dashboard affiche un message et ne présente pas de solde calculé à partir d’achats manquants.
