@@ -2527,6 +2527,11 @@ html[data-theme="it"],html[data-theme="nettoyage"],html[data-theme="mecanicien"]
 .application-error pre {white-space:pre-wrap; overflow-wrap:anywhere; max-height:220px; overflow:auto; font-size:.78rem;}
 .application-error:focus,.verify-action .error:focus {outline:2px solid #a52b20; outline-offset:3px;}
 .danger-button {color:#a52b20; border-color:#dca8a2;}
+.document-actions .document-toolbar {align-items:center;gap:12px;margin-bottom:0;}
+.document-state {display:inline-flex;align-items:center;gap:9px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--canvas);color:var(--green);font-size:.82rem;font-weight:700;line-height:1.4;max-width:100%;}
+.document-state-dot {width:7px;height:7px;flex-shrink:0;border-radius:50%;background:currentColor;}
+.document-toolbar > button {margin:0;}
+@media(max-width:760px){.document-actions .document-toolbar{gap:10px;}.document-toolbar > .document-state{margin-right:auto;}}
 @media(max-width:650px) {.verify-action {max-width:100%; width:100%;} .verify-action button {width:100%;}}
 @media print {
   @page {size:A4; margin:14mm;}
