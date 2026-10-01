@@ -20,13 +20,13 @@ function environment() {
   const context = vm.createContext({ Promise, Map, Object, setTimeout: fn => timers.push(fn), document: { getElementById: () => null }, location: { hash: '#home' },
     window: { APP_CONFIG: { supabaseUrl: 'https://example.invalid', supabaseKey: 'test-public-key' }, supabase: { createClient: () => db } },
     render() { renders.push(vm.runInContext('({state:dataState, count:docs.length})', context)); },
-    showError() {}, applyTheme() {}, localTheme: () => 'plombier',
+    showError() {}, applyTheme() {}, localTheme: () => 'plombier', companyOwner: id => id,
     readDocument: (row, lines) => ({ ...row, dbId: row.id, lines }),
     async loadReminders(userId) { await db.from('payment_reminders'); },
     async loadVAT(userId) { await db.from('vat_purchases'); },
   });
   context.mockDb = db;
-  vm.runInContext(`let account={id:'user-a'}, db=mockDb, sessionGeneration=1, dataState='loading', dataLoad=null, clients=[], docs=[], company={}, themeColumnReady=false, draft=null, reminders=[], recurrenceDoc=null, recurrenceEdit=null, logoDraft=null, logoDirty=false;`, context);
+  vm.runInContext(`let account={id:'user-a'}, db=mockDb, teamContext=null, sessionGeneration=1, dataState='loading', dataLoad=null, clients=[], docs=[], company={}, themeColumnReady=false, draft=null, reminders=[], recurrenceDoc=null, recurrenceEdit=null, logoDraft=null, logoDirty=false;`, context);
   vm.runInContext(loader, context);
   const resolveCore = (documents = [{ id: 'invoice-1' }]) => {
     requests.clients.resolve({ data: [] }); requests.companies.resolve({ data: { name: 'Test' } });

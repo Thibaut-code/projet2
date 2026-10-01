@@ -2,11 +2,12 @@
 let vatPurchases = [], vatUser = null, vatError = '', vatBusy = false;
 let vatYear = new Date().getFullYear(), vatQuarter = Math.floor(new Date().getMonth() / 3) + 1;
 async function loadVAT(userId) {
+  const scopeOwner = companyOwner(userId);
   vatUser = null; vatPurchases = []; vatError = '';
   let result;
-  try { result = await db.from('vat_purchases').select('*').eq('user_id', userId).order('tax_date'); }
+  try { result = await db.from('vat_purchases').select('*').eq('user_id', scopeOwner).order('tax_date'); }
   catch (error) { result = {error}; }
-  if (account?.id !== userId) return;
+  if (account?.id !== userId || companyOwner(userId) !== scopeOwner) return;
   vatUser = userId;
   if (result.error) vatError = ['42P01','PGRST205','42703','PGRST204'].includes(result.error.code)
     ? 'Pour activer les achats TVA, exécutez supabase/migrations/20260930_vat.sql dans Supabase, puis rechargez le site.'
@@ -71,7 +72,7 @@ function vatSaleDate(d) {
     e.preventDefault(); if(vatBusy)return;
     const date = new FormData(e.target).get('date'); if(!validDate(date))return;
     vatBusy=true; const userId=account.id;
-    try {const {data,error}=await db.from('documents').update({vat_date:date}).eq('id',d.dbId).eq('user_id',userId).select('id');if(error)throw error;if(!data?.length)throw Error('Facture introuvable.');if(account?.id!==userId)return;d.vatDate=date;dialog.close();render();}
+    try {const {data,error}=await db.from('documents').update({vat_date:date}).eq('id',d.dbId).eq('user_id',companyOwner(userId)).select('id');if(error)throw error;if(!data?.length)throw Error('Facture introuvable.');if(account?.id!==userId)return;d.vatDate=date;dialog.close();render();}
     catch(error){showError(['42703','PGRST204'].includes(error.code)?Error('Exécutez la migration 20260930_vat.sql pour enregistrer les dates TVA.'):error);}finally{vatBusy=false;}
   };
 }
@@ -87,12 +88,12 @@ function vatPurchaseForm(id) {
     ['net_amount','vat_amount','deduction_percent'].forEach(k=>values[k]=Number(values[k]));
     if(!values.supplier||!values.reference||!validDate(values.invoice_date)||!validDate(values.tax_date)||!['81','82','83'].includes(values.category)||['net_amount','vat_amount','deduction_percent'].some(k=>!Number.isFinite(values[k])||values[k]<0)||values.deduction_percent>100||values.net_amount>999999999||values.vat_amount>999999999){showError(Error('Vérifiez les dates et les montants de l’achat.'));return;}
     vatBusy=true;const userId=account.id;
-    try {let query=id?db.from('vat_purchases').update(values).eq('id',id).eq('user_id',userId):db.from('vat_purchases').insert({...values,user_id:userId});const {data,error}=await query.select().single();if(error)throw error;if(account?.id!==userId)return;vatPurchases=vatPurchases.filter(p=>p.id!==id);vatPurchases.push(data);dialog.close();render();toast('Achat enregistré.');}catch(error){showError(error);}finally{vatBusy=false;}
+    try {let query=id?db.from('vat_purchases').update(values).eq('id',id).eq('user_id',companyOwner(userId)):db.from('vat_purchases').insert({...values,user_id:companyOwner(userId)});const {data,error}=await query.select().single();if(error)throw error;if(account?.id!==userId)return;vatPurchases=vatPurchases.filter(p=>p.id!==id);vatPurchases.push(data);dialog.close();render();toast('Achat enregistré.');}catch(error){showError(error);}finally{vatBusy=false;}
   };
   if(id)dialog.querySelector('#vat-delete').onclick=()=>{
     const b=dialog.querySelector('#vat-delete');b.textContent='Confirmer la suppression';b.onclick=async()=>{
       if(vatBusy)return;vatBusy=true;const userId=account.id;
-      try{const {data,error}=await db.from('vat_purchases').delete().eq('id',id).eq('user_id',userId).select('id');if(error)throw error;if(!data?.length)throw Error('Achat introuvable.');if(account?.id!==userId)return;vatPurchases=vatPurchases.filter(p=>p.id!==id);dialog.close();render();}catch(error){showError(error);}finally{vatBusy=false;}
+      try{const {data,error}=await db.from('vat_purchases').delete().eq('id',id).eq('user_id',companyOwner(userId)).select('id');if(error)throw error;if(!data?.length)throw Error('Achat introuvable.');if(account?.id!==userId)return;vatPurchases=vatPurchases.filter(p=>p.id!==id);dialog.close();render();}catch(error){showError(error);}finally{vatBusy=false;}
     };
   };
 }

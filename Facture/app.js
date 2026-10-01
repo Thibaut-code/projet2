@@ -112,7 +112,7 @@ function localTheme() {
 function applyTheme(key) {
   themeChoice = Object.hasOwn(PROFESSIONS, key) ? key : "plombier";
   uiColumnReady = Object.hasOwn(company, 'ui_theme');
-  applyInterface(company.ui_theme || localInterface() || 'bleu');
+  applyInterface(teamContext?.ui_theme || localInterface() || company.ui_theme || 'bleu');
 }
 
 let docs = [];
@@ -163,7 +163,7 @@ function rows(list) {
   return list
     .map(
       (d) => `
-        <div class="doc-row">
+        <div class="doc-row" data-search-key="${esc(client(d).name + ' ' + d.id)}">
             <div class="doc-identity">
                 <span class="doc-type-icon" aria-hidden="true">${d.type === "devis" ? "▤" : "▧"}</span>
                 <div><strong>${esc(client(d).name)}</strong>
@@ -185,7 +185,7 @@ function homeTable(list) {
         <thead><tr><th>N°</th><th>Date</th><th>Client</th><th>Description</th><th>Montant</th><th>Statut</th><th><span class="sr-only">Ouvrir</span></th></tr></thead>
         <tbody>${list
           .map(
-            (d) => `<tr>
+            (d) => `<tr data-search-key="${esc(client(d).name + ' ' + d.id)}">
             <td>${esc(d.id)}</td><td>${fmt(d.date)}</td><td>${esc(client(d).name)}</td>
             <td>${esc(d.job)}</td><td>${euro(totals(d).total)}</td>
             <td><span class="badge ${d.type === "devis" ? "quote" : d.paid ? "paid" : "pending"}">${d.type === "devis" ? "Devis" : d.paid ? "Payée" : "En attente"}</span></td>
@@ -222,7 +222,7 @@ function wizard() {
   if (!draft) return home();
   return `${intro(draft.type === "devis" ? "Préparer mon devis" : "Créer ma facture", "Prenons les choses dans l’ordre.")}<div class="steps">${["Le client", "Les travaux", "Vérifier"].map((s, i) => `<div class="step ${step === i + 1 ? "active" : ""}" ${step === i + 1 ? 'aria-current="step"' : ""}><b>${i + 1}</b>${s}</div>`).join("")}</div><div class="panel">${
     step === 1
-      ? `<h2>Pour quel client ?</h2><div class="client-grid">${clients.map((c) => `<button class="client-card ${draft.client === c.id ? "selected" : ""}" aria-pressed="${draft.client === c.id}" onclick="draft.client='${c.id}';delete draft.customer;render()"><strong>${esc(c.name)}</strong><small>${esc(c.address).replace(/\n/g, "<br>")}</small></button>`).join("")}</div><button class="link" style="margin-top:20px" onclick="returnToWizard=true;go('newclient')">+ Ajouter un nouveau client</button><div class="form-footer"><a href="#home" class="link">Retour à l’accueil</a><button class="primary" onclick="next()">Continuer vers les travaux →</button></div>`
+      ? `<h2>Pour quel client ?</h2>${searchField('Rechercher un client par nom ou référence')}<div class="client-grid">${clients.map((c) => `<button data-search-key="${esc(c.name + ' ' + c.id)}" class="client-card ${draft.client === c.id ? "selected" : ""}" aria-pressed="${draft.client === c.id}" onclick="draft.client='${c.id}';delete draft.customer;render()"><strong>${esc(c.name)}</strong><small>${esc(c.address).replace(/\n/g, "<br>")}</small></button>`).join("")}</div><button class="link" style="margin-top:20px" onclick="returnToWizard=true;go('newclient')">+ Ajouter un nouveau client</button><div class="form-footer"><a href="#home" class="link">Retour à l’accueil</a><button class="primary" onclick="next()">Continuer vers les travaux →</button></div>`
       : step === 2
         ? `<h2>Quels travaux avez-vous réalisés ?</h2><label class="field">Nom du chantier ou des travaux<input id="job" value="${esc(draft.job)}" placeholder="Ex. Entretien de chaudière" oninput="draft.job=this.value"></label><label class="field">Adresse du chantier (si différente)<input value="${esc(draft.site || "")}" placeholder="Facultatif" oninput="draft.site=this.value"></label><p class="muted">Ajoutez une prestation, puis adaptez la quantité et le prix.</p><div class="catalog">${catalogForTheme()
             .map(
@@ -385,7 +385,7 @@ async function togglePaid(id) {
       .from("documents")
       .update({ paid, paid_at: paidAt })
       .eq("id", d.dbId)
-      .eq("user_id", account.id);
+      .eq("user_id", companyOwner());
     if (error) throw error;
     d.paid = paid;
     d.paidAt = paidAt;
@@ -399,7 +399,7 @@ async function togglePaid(id) {
   }
 }
 function clientsView() {
-  return `${intro("Mes clients", "Retrouvez leurs coordonnées en un coup d’œil.", '<button class="primary" onclick="returnToWizard=false;go(\'newclient\')">+ Ajouter un client</button>')}<div class="client-grid">${clients.map((c) => `<div class="panel"><h2>${esc(c.name)}</h2><p class="muted">${esc(c.address).replace(/\n/g, "<br>")}<br>${esc(c.email)}</p>${c.note ? `<p class="client-note"><strong>Note interne</strong><br>${esc(c.note)}</p>` : ""}<div class="client-actions"><button onclick="startForClient('${c.id}')">Créer une facture</button><button onclick="go('editclient/${c.id}')">Modifier</button></div></div>`).join("")}</div>`;
+  return `${intro("Mes clients", "Retrouvez leurs coordonnées en un coup d’œil.", '<button class="primary" onclick="returnToWizard=false;go(\'newclient\')">+ Ajouter un client</button>')}${searchField('Rechercher un client par nom ou référence')}<div class="client-grid">${clients.map((c) => `<div class="panel" data-search-key="${esc(c.name + ' ' + c.id)}"><h2>${esc(c.name)}</h2><p class="muted">${esc(c.address).replace(/\n/g, "<br>")}<br>${esc(c.email)}</p>${c.note ? `<p class="client-note"><strong>Note interne</strong><br>${esc(c.note)}</p>` : ""}<div class="client-actions"><button onclick="startForClient('${c.id}')">Créer une facture</button><button onclick="go('editclient/${c.id}')">Modifier</button></div></div>`).join("")}</div>`;
 }
 function startForClient(id) {
   if (draft) {
@@ -446,7 +446,7 @@ function originalRender() {
     month: "long",
     year: "numeric",
   });
-  $("#accountname").textContent = company.name?.trim() || "Mon entreprise";
+  $("#accountname").textContent = employeeName();
   const route = location.hash.slice(1) || "home";
   document
     .querySelectorAll("[data-nav]")
@@ -463,6 +463,7 @@ function originalRender() {
   }
   let html;
   if (route === "wizard") html = wizard();
+  else if (route.startsWith("join/") && /^[a-f0-9]{64}$/.test(route.slice(5))) html = invitationView(route.slice(5));
   else if (route === "clients") html = clientsView();
   else if (route === "newclient") html = newClient();
   else if (route.startsWith("editclient/")) html = editClient(route.slice(11));
@@ -480,9 +481,9 @@ function originalRender() {
       )
       .join(
         "",
-      )}</div><div class="panel">${rows(docs.filter((d) => filter === "all" || d.type === filter))}</div>`;
+      )}</div>${searchField()}<div class="panel">${rows(docs.filter((d) => filter === "all" || d.type === filter))}</div>`;
   else if (route === "payments")
-    html = `${intro("Qui doit encore me payer ?", "Ouvrez une facture pour noter son paiement.")}<div class="panel">${rows(docs.filter((d) => d.type === "facture" && !d.paid))}</div><div class="section-head" style="margin-top:30px"><h2>Factures payées</h2></div><div class="panel">${rows(docs.filter((d) => d.type === "facture" && d.paid))}</div>`;
+    html = `${intro("Qui doit encore me payer ?", "Ouvrez une facture pour noter son paiement.")}${searchField()}<div class="panel">${rows(docs.filter((d) => d.type === "facture" && !d.paid))}</div><div class="section-head" style="margin-top:30px"><h2>Factures payées</h2></div><div class="panel">${rows(docs.filter((d) => d.type === "facture" && d.paid))}</div>`;
   else html = home();
   $("#main").innerHTML = html;
   if ($("#clientform"))
@@ -549,8 +550,9 @@ function originalRender() {
         .then(() => {
           company = { ...company, ...values, theme: themeChoice };
           logoDirty = false;
-          $("#accountname").textContent = company.name.trim();
+          $("#accountname").textContent = employeeName();
           toast("Coordonnées enregistrées.");
+          go("home");
         })
         .catch(featureError);
     };
@@ -662,7 +664,7 @@ function changeDraftDate(value) {
 async function saveClient({ name, address, email, ...extra }) {
   const { data, error } = await db
     .from("clients")
-    .insert({ user_id: account.id, name, address, email: email || null, ...extra })
+    .insert({ user_id: companyOwner(), name, address, email: email || null, ...extra })
     .select("*")
     .single();
   if (error) throw error;
@@ -674,7 +676,7 @@ async function updateClient(id, { name, address, email, ...extra }) {
     .from("clients")
     .update({ name, address, email: email || null, ...extra })
     .eq("id", id)
-    .eq("user_id", account.id)
+    .eq("user_id", companyOwner())
     .select("*")
     .single();
   if (error) throw error;
@@ -683,7 +685,7 @@ async function updateClient(id, { name, address, email, ...extra }) {
 
 async function saveCompany(values) {
   const { error } = await db.from("companies").upsert({
-    user_id: account.id,
+    user_id: companyOwner(),
     name: values.name.trim(),
     address: values.address.trim(),
     vat: values.vat?.trim() || null,
@@ -698,11 +700,11 @@ async function saveCompany(values) {
   const themeUpdate = await db
     .from("companies")
     .update({ theme: themeChoice })
-    .eq("user_id", account.id);
+    .eq("user_id", companyOwner());
   if (!themeUpdate.error) themeColumnReady = true;
   else if (!["42703", "PGRST204"].includes(themeUpdate.error.code))
     console.error(themeUpdate.error);
-  const interfaceUpdate = await db.from('companies').update({ui_theme:uiChoice}).eq('user_id',account.id);
+  const interfaceUpdate = await db.from('companies').update({ui_theme:uiChoice}).eq('user_id',companyOwner());
   if (!interfaceUpdate.error) { uiColumnReady = true; company.ui_theme = uiChoice; }
   else if (!["42703", "PGRST204"].includes(interfaceUpdate.error.code)) console.error(interfaceUpdate.error);
 }
@@ -762,6 +764,8 @@ async function fetchData(userId, generation) {
     dataState = "loading";
     render();
   }
+  if (db?.rpc) await resolveTeam(userId, generation);
+  if(account?.id !== userId || sessionGeneration !== generation) return;
   // Secondary data must not hold up the invoice amounts.
   const secondary = Promise.all([loadReminders(userId), loadVAT(userId)]).catch(error => {
     if (account?.id === userId && sessionGeneration === generation) showError(error);
@@ -771,18 +775,18 @@ async function fetchData(userId, generation) {
       db
         .from("clients")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", companyOwner(userId))
         .order("created_at"),
-      db.from("companies").select("*").eq("user_id", userId).maybeSingle(),
+      db.from("companies").select("*").eq("user_id", companyOwner(userId)).maybeSingle(),
       db
         .from("documents")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", companyOwner(userId))
         .order("created_at", { ascending: false }),
       db
         .from("document_lines")
         .select("*")
-        .eq("user_id", userId)
+        .eq("user_id", companyOwner(userId))
         .order("position"),
     ]);
   for (const result of [
@@ -869,6 +873,7 @@ async function initialize() {
     logoDirty = false;
     company = { name: "", address: "", vat: "", iban: "", email: "" };
     themeColumnReady = false;
+    teamContext = null;
     applyTheme(account ? localTheme() : "plombier");
     draft = null;
     render();
@@ -1008,7 +1013,7 @@ function manageCatalog() {
       const result = await db
         .from("companies")
         .update({ catalogs })
-        .eq("user_id", account.id)
+        .eq("user_id", companyOwner())
         .select("user_id")
         .single();
       if (result.error) throw result.error;
@@ -1052,7 +1057,7 @@ async function saveRecurrence() {
       .from("documents")
       .update({ recurrence: recurrenceEdit })
       .eq("id", recurrenceDoc.dbId)
-      .eq("user_id", account.id);
+      .eq("user_id", companyOwner());
     if (error) throw error;
     recurrenceDoc.recurrence = structuredClone(recurrenceEdit);
     $("#feature-dialog").close();
@@ -1093,7 +1098,7 @@ async function finishOccurrence(id) {
       .from("documents")
       .update({ recurrence: next })
       .eq("id", d.dbId)
-      .eq("user_id", account.id)
+      .eq("user_id", companyOwner())
       .eq("recurrence->>next", old.next)
       .select("id")
       .single();
@@ -1152,12 +1157,13 @@ function home() {
   );
 }
 async function loadReminders(userId) {
+  const scopeOwner = companyOwner(userId);
   const result = await db
     .from("payment_reminders")
     .select("*")
-    .eq("user_id", userId)
+    .eq("user_id", scopeOwner)
     .order("created_at", { ascending: false });
-  if (account?.id !== userId) return;
+  if (account?.id !== userId || companyOwner(userId) !== scopeOwner) return;
   reminders = result.error ? [] : result.data || [];
   if (result.error && !["42P01", "PGRST205"].includes(result.error.code))
     featureError(result.error);
@@ -1188,7 +1194,7 @@ function remindClient(id) {
         .from("payment_reminders")
         .insert({
           ...values,
-          user_id: account.id,
+          user_id: companyOwner(),
           document_id: d.dbId,
           status: "prepared",
         })
@@ -1218,7 +1224,7 @@ async function confirmReminder(id) {
       .from("payment_reminders")
       .update({ status: "confirmed", confirmed_at })
       .eq("id", id)
-      .eq("user_id", account.id)
+      .eq("user_id", companyOwner())
       .select("id")
       .single();
     if (result.error) throw result.error;
@@ -1249,7 +1255,7 @@ function logoHTML(value, shape = company.logo_shape) {
 }
 function companyView() {
   const logo = logoDirty ? logoDraft : company.logo;
-  return originalCompanyView().replace('<form id="companyform"', professionSettings() + '<form id="companyform"')
+  return originalCompanyView().replace('<form id="companyform"', professionSettings() + teamSettings() + '<form id="companyform"')
     .replace(
       '<label class="field">Nom de l’entreprise',
       `<fieldset class="logo-editor"><legend>Logo de l’entreprise</legend><div id="logo-preview">${logoHTML(logo) || "<p>Aucun logo sélectionné.</p>"}</div><label class="field">Format du logo<select name="logo_shape" onchange="previewLogoShape(this.value)"><option value="rectangle" ${company.logo_shape !== 'square' ? 'selected' : ''}>Rectangle — maximum 190 × 100 px</option><option value="square" ${company.logo_shape === 'square' ? 'selected' : ''}>Carré — 120 × 120 px</option></select></label><label class="field">Choisir un logo (PNG, JPEG ou WebP, maximum 2 Mo)<input type="file" accept="image/png,image/jpeg,image/webp" onchange="selectLogo(this.files[0])"></label><button type="button" onclick="removeLogo()">Retirer le logo</button><p class="muted">Le logo sera affiché en haut des nouvelles factures et des devis. Enregistrez vos coordonnées pour conserver ce choix.</p></fieldset><label class="field">Nom de l’entreprise`,
@@ -1353,7 +1359,7 @@ function accentText(color) {
 }
 function documentHeader(d) {
   const c=d.customer || client(d),biz=documentBusiness(d);
-  return `<div class="document-heading">${logoHTML(biz.logo,biz.logo_shape)}<div class="invoice-title"><h2>${d.type==='devis'?'DEVIS':'FACTURE'}</h2><div>${esc(d.id)}</div></div></div><div class="invoice-parties"><div><h3 class="party-heading">${esc(biz.name)}</h3><p>${esc(biz.address)}${biz.vat?'<br>'+esc(biz.vat):''}</p></div><div class="invoice-buyer"><h3 class="party-heading">CLIENT</h3><p><strong>${esc(c.name)}</strong><br>${esc(c.address)}${c.vat?'<br>'+esc(c.vat):''}</p><p class="invoice-dates">Date : ${fmt(d.date)}<br>${d.type==='devis'?'Valable jusqu’au':'Échéance'} : ${fmt(d.due)}</p></div></div>`;
+  return `<div class="document-heading">${logoHTML(biz.logo,biz.logo_shape)}<div class="invoice-title"><h2>${d.type==='devis'?'DEVIS':'FACTURE'}</h2><div>${esc(d.id)}</div></div></div><div class="invoice-parties"><div><h3 class="party-heading">${esc(biz.name)}</h3><p>${invoiceAddress(biz)}${biz.vat?'<br>'+esc(biz.vat):''}</p></div><div class="invoice-buyer"><h3 class="party-heading">CLIENT</h3><p><strong>${esc(c.name)}</strong><br>${invoiceAddress(c)}${c.vat?'<br>'+esc(c.vat):''}</p><p class="invoice-dates">Date : ${fmt(d.date)}<br>${d.type==='devis'?'Valable jusqu’au':'Échéance'} : ${fmt(d.due)}</p></div></div>`;
 }
 function documentBusiness(d) {
   const biz = d.issuer || company;
@@ -1420,13 +1426,13 @@ async function saveAppearance() {
     const a = cleanAppearance(appearanceDraft);
     const d = appearanceTarget ? docs.find(x => x.id === appearanceTarget) : draft;
     if (appearanceTarget) {
-      const {error} = await db.from('documents').update({appearance:a}).eq('id',d.dbId).eq('user_id',account.id);
+      const {error} = await db.from('documents').update({appearance:a}).eq('id',d.dbId).eq('user_id',companyOwner());
       if (error) throw error;
     }
     d.appearance=a;
     if ($('#default-appearance').checked) {
       if (!company.name) throw Error('Enregistrez les coordonnées de votre entreprise avant de définir un modèle par défaut.');
-      const {error} = await db.from('companies').update({appearance:a}).eq('user_id',account.id);
+      const {error} = await db.from('companies').update({appearance:a}).eq('user_id',companyOwner());
       if (error) throw error; company.appearance=a;
     }
     $('#feature-dialog').close(); render(); toast('Modèle enregistré.');
@@ -1621,7 +1627,7 @@ function dashOpenDocs(title,list) {
 async function dashSetPaymentDate(d) {
   if(busy)return;const value=prompt('Date réelle du paiement (AAAA-MM-JJ)',today());if(value===null)return;
   if(!validDate(value)||value>today()||value<d.date)return toast('Date de paiement invalide.');
-  busy=true;try {const {error}=await db.from('documents').update({paid_at:value}).eq('id',d.dbId).eq('user_id',account.id);if(error)throw error;d.paidAt=value;$('#feature-dialog')?.close();render();}catch(e){if(['42703','PGRST204'].includes(e.code))toast('Exécutez dashboard.sql dans Supabase pour enregistrer les dates de paiement.');else showError(e);}finally{busy=false;}
+  busy=true;try {const {error}=await db.from('documents').update({paid_at:value}).eq('id',d.dbId).eq('user_id',companyOwner());if(error)throw error;d.paidAt=value;$('#feature-dialog')?.close();render();}catch(e){if(['42703','PGRST204'].includes(e.code))toast('Exécutez dashboard.sql dans Supabase pour enregistrer les dates de paiement.');else showError(e);}finally{busy=false;}
 }
 function dashKpi(kind) {
   const all=dashInvoices(),now=dashDate(today()),m=new Date(now.getFullYear(),now.getMonth(),1,12),y=new Date(now.getFullYear(),0,1,12);

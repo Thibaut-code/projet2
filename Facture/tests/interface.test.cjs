@@ -5,6 +5,8 @@ const element=()=>({dataset:{},style:{setProperty(){}},setAttribute(){},querySel
 const $=key=>{if(!elements.has(key))elements.set(key,element());return elements.get(key)};
 const context=vm.createContext({console,Date,Object,localStorage:{getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)},document:{documentElement:element(),getElementById:()=>null,querySelectorAll:()=>[]},$,account:{id:'a'},company:{name:'Test',catalogs:{plombier:[['Personnalisée',1,75]]}},themeChoice:'plombier',themeColumnReady:true,PROFESSIONS:{plombier:{label:'Plomberie'},jardinier:{label:'Jardinage'}},themeStorageKey:()=> 'profession:a',render(){},toast(){},showError(){},esc:String,db:{from:()=>({update:v=>{writes.push(v);return {eq:async()=>({})}}})}});
 vm.runInContext(fs.readFileSync('interface.js','utf8'),context);
+context.teamContext=null;context.companyOwner=()=>context.account.id;
+context.document.querySelector=()=>null;
 return {context,storage,writes};
 }
 test('les dix apparences ne modifient ni le métier ni les prestations personnelles',async()=>{

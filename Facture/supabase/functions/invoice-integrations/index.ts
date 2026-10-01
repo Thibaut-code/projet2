@@ -101,7 +101,12 @@ Deno.serve(async (req) => {
       return reply({ error: 'Session invalide' }, 401);
     }
 
-    const uid = auth.user.id;
+    const actorId = auth.user.id;
+    const membership = await admin.from('company_members').select('owner_id').eq('member_id', actorId).maybeSingle();
+    if (membership.error && !['42P01','PGRST205'].includes(membership.error.code)) {
+      return reply({ error: 'Impossible de vérifier votre accès à la société' }, 503);
+    }
+    const uid = membership.data?.owner_id || actorId;
     const { action, documentId } = await req.json();
 
     if (

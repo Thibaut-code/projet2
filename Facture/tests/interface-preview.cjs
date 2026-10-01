@@ -5,6 +5,7 @@ let html=fs.readFileSync(path.join(root,'index.html'),'utf8').replace(/<script s
 html=html.replace('</body>',`<script>
 account={id:'interface-preview'};company={name:'Orbytek',theme:'plombier',catalogs:{plombier:[['Prestation personnelle',1,80]]}};
 clients=[{id:'c1',name:'Client de démonstration',address:'Bruxelles'}];
+db={from:()=>{const query={upsert:()=>query,update:()=>query,eq:()=>query,then:resolve=>resolve({data:null,error:null})};return query;}};
 docs=Array.from({length:8},(_,i)=>({id:'F-2026-00'+(8-i),type:'facture',date:'2026-10-01',due:'2026-09-30',paid:i<2,client:'c1',job:'Prestation de démonstration',lines:[{name:'Prestation',qty:1,price:100+i*30,tax:21}]}));
 dataState='ready';themeColumnReady=false;uiColumnReady=false;
 applyTheme('plombier');$('#themebutton').hidden=false;render();

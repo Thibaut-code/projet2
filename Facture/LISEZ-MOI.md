@@ -1,5 +1,34 @@
 # Facture Facile avec Supabase
 
+## Interfaces, recherche et équipes — version 2026.10.02.1
+
+Les dix apparences reprennent davantage les compositions des maquettes : marques et icônes propres, cartes colorées, navigation horizontale ou latérale, colonnes d’actions, tableaux et graphiques différents. Le menu horizontal n’a plus de hauteur minimale d’un écran. Les graphiques utilisent uniquement les données enregistrées, sans exemples ajoutés aux comptes.
+
+La recherche dans l’accueil, les factures, devis, paiements, clients et la sélection du client filtre par nom ou référence sans tenir compte des accents ni des majuscules. Le logo de l’aperçu facture/devis est agrandi de 15 %. Le code pays final est masqué dans l’adresse imprimée, mais reste enregistré pour les contrôles TVA. Enregistrer Mon entreprise ramène à l’accueil.
+
+### Installation des comptes employés
+
+Publiez ensemble `index.html`, `app.js`, `vat.js`, `style.css`, `interface.js`, `interface.css`, **`refinement.css`** et **`team.js`**. Conservez votre `config.js` et `vendor`.
+
+Exécutez les migrations dans cet ordre si elles ne sont pas encore appliquées :
+
+1. `supabase/migrations/20260926_upgrade.sql` (sauvegarde transactionnelle et numérotation).
+2. `supabase/migrations/20260930_vat.sql`.
+3. `supabase/migrations/20261001_interface.sql`.
+4. **`supabase/migrations/20261002_team.sql`**.
+
+La dernière migration conserve les données existantes sous l’identifiant du responsable de la société. Les comptes employés y accèdent par leur appartenance à l’équipe. Les règles d’accès sont remplacées pour partager les données à l’intérieur de la société. Les compteurs et verrous de numérotation sont communs à la société. Chaque nouveau document enregistre également l’identifiant de son créateur. Les documents anciens restent conservés sans inventer leur auteur.
+
+Après connexion, le responsable renseigne la société puis ouvre **Paramètres > Équipe > Gérer les employés et les invitations**. Il crée une invitation pour l’adresse e-mail de l’employé et transmet lui-même le lien. L’employé crée son propre compte, confirme son e-mail, se connecte puis ouvre le lien pour accepter. Un lien expire après sept jours, ne s’utilise qu’une fois et ne fonctionne que pour l’adresse invitée. L’application n’envoie pas automatiquement ces invitations. Le responsable peut retirer l’accès d’un employé ; les documents de la société restent conservés.
+
+Chaque personne renseigne son nom dans Paramètres et choisit son apparence personnelle, synchronisée avec son compte. Les clients, prestations, documents, abonnements, relances, coordonnées de société et achats TVA sont partagés. Les membres ont les mêmes fonctions de gestion dans l’espace partagé ; la gestion des invitations et des accès est réservée au responsable. Une personne appartient à une seule société active à la fois. Son ancien espace personnel est conservé lorsqu’elle rejoint une équipe.
+
+Si Peppol de test est utilisé, redéployez aussi **`supabase/functions/invoice-integrations`** : la fonction vérifie désormais l’équipe et utilise la configuration du responsable de la société.
+
+Sans la migration équipe, l’application garde le fonctionnement individuel et affiche l’étape nécessaire dans Paramètres. La migration n’est pas exécutée automatiquement depuis le navigateur. Avant ouverture aux employés, validez sur Supabase deux comptes de la même société, un compte extérieur, une invitation expirée/réutilisée, le retrait d’accès et deux sauvegardes simultanées. Les tests locaux ne remplacent pas ces vérifications de base réelle.
+
+Références techniques pour les contrôles serveur : [sécurité des fonctions PostgreSQL](https://www.postgresql.org/docs/16/sql-createfunction.html), [règles d’accès aux lignes](https://www.postgresql.org/docs/17/ddl-rowsecurity.html).
+
 ## Ouverture de messagerie — correction du destinataire
 
 Après **Préparer le message et le PDF**, le bouton **Ouvrir ma messagerie** utilise un lien `mailto:` avec destinataire, objet et message encodés. Configurez Outlook comme messagerie par défaut pour ouvrir le message dans Outlook. Téléchargez le PDF et joignez-le au message avant envoi. Le partage Windows de PDF a été retiré de ce parcours, car il ne transmet pas de destinataire.

@@ -16,6 +16,7 @@ let uiColumnReady = false;
 function uiStorageKey() { return `facture-facile-interface:${account?.id || 'guest'}`; }
 function localInterface() { try { return localStorage.getItem(uiStorageKey()); } catch { return null; } }
 const ICON_PATHS = {
+  search: '<circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/>',
   home: '<path d="m3 10 9-7 9 7v11h-6v-7H9v7H3z"/>',
   docs: '<path d="M6 3h9l4 4v14H6zM14 3v5h5M9 12h7M9 16h7"/>',
   clients: '<circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M17 5a3 3 0 0 1 0 6M18 15a5 5 0 0 1 3 6"/>',
@@ -36,6 +37,8 @@ function applyInterface(key) {
   root.style.setProperty('--ui-font', `"${t.font}", Arial, sans-serif`);
   root.style.setProperty('--ui-heading', t.heading || `"${t.font}", Arial, sans-serif`);
   root.style.setProperty('--ui-action-ink', ['citron','violet','orange'].includes(uiChoice) ? '#151515' : '#ffffff');
+  const marks={bleu:'<path d="M8 24 20 8l12 10-12 16z"/><path d="m22 14 18 12-14 16-10-10z" opacity=".6"/>',violet:'<path d="M8 5h30v10H19v9h15v9H19v10H8z"/>',corail:'<circle cx="14" cy="14" r="9"/><circle cx="34" cy="14" r="9"/><circle cx="14" cy="34" r="9"/><circle cx="34" cy="34" r="9" opacity=".6"/>',citron:'<path d="M18 4h13L14 26H2zM32 18h13L28 40H15z"/>',turquoise:'<path d="M2 23Q13 4 26 16T46 14Q36 35 23 25T2 23ZM2 35Q13 18 26 29T46 26Q36 47 23 37T2 35Z"/>',peche:'<path d="M5 36V18a15 15 0 0 1 30 0L19 36z"/><rect x="19" y="23" width="23" height="22" rx="6" opacity=".5"/>',orange:'<path d="M6 16 40 2v12L6 28zM6 33l25-11v12L6 45z"/>',bordeaux:'<path d="M4 5h39Q39 20 25 20H4zM4 25h26Q27 38 15 38H4zM4 39h11v8H4z"/>',cyan:'<path d="m24 2 20 11v23L24 47 4 36V13l10 6v11l10 6 10-6V19l-10-6-10 6-10-6z"/>',sable:'<path d="M6 43V17Q6 4 18 4h5v12h-5v27zM25 43V28q0-12 13-12h6v12h-7v15z"/>'};
+  const mark=document.querySelector('.brand-symbol');if(mark)mark.innerHTML=`<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">${marks[uiChoice]}</svg>`;
   const fontLink = document.getElementById('interface-font');
   if (fontLink) fontLink.href = `https://fonts.googleapis.com/css2?family=${t.font.replaceAll(' ','+')}:wght@400;500;600;700&display=swap`;
   $('#themelabel').textContent = t.label;
@@ -49,11 +52,15 @@ async function chooseTheme(key) {
   applyInterface(key);
   try { localStorage.setItem(uiStorageKey(),key); } catch { /* Session courante conservée. */ }
   $('#themedialog').close(); render();
-  if (uiColumnReady) {
-    const owner = account.id;
+  if (teamContext) {
+    const {error}=await db.rpc('set_interface_preference',{interface_key:key});
+    if(error) return showError(error);
+    teamContext.ui_theme=key;
+  } else if (uiColumnReady) {
+    const owner = companyOwner();
     const {error} = await db.from('companies').update({ui_theme:key}).eq('user_id',owner);
     if(error) { showError(error); return; }
-    if(account?.id === owner) company.ui_theme = key;
+    company.ui_theme = key;
   }
   toast(`Apparence « ${UI_THEMES[key].label} » sélectionnée.`);
 }
@@ -67,7 +74,7 @@ async function chooseProfession(key) {
   if(!account || !Object.hasOwn(PROFESSIONS,key)) return;
   const previous = themeChoice;
   if(themeColumnReady) {
-    const {error} = await db.from('companies').update({theme:key}).eq('user_id',account.id);
+    const {error} = await db.from('companies').update({theme:key}).eq('user_id',companyOwner());
     if(error) { $('#profession-choice').value=previous; showError(error); return; }
   }
   themeChoice=key; company.theme=key;
@@ -80,8 +87,11 @@ function interfaceHome() {
   const actions=`<section class="ui-actions"><h2>Actions rapides</h2><button class="primary" onclick="start('facture')">${uiIcon('plus')} Nouvelle facture</button><button onclick="start('devis')">${uiIcon('docs')} Nouveau devis</button></section>`;
   const months=Array.from({length:6},(_,i)=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-5+i);return {key:d.toLocaleDateString('sv-SE').slice(0,7),label:d.toLocaleDateString('fr-BE',{month:'short'})};});
   const amounts=months.map(m=>invoices.filter(d=>d.date?.startsWith(m.key)).reduce((s,d)=>s+totals(d).net,0)), max=Math.max(1,...amounts);
-  const activity=`<section class="ui-activity"><div class="section-head"><h2>Activité sur six mois</h2><a class="link" href="#dashboard">Rapports →</a></div><p class="muted">Montants facturés hors TVA</p><div class="ui-chart">${months.map((m,i)=>`<div><span>${euro(amounts[i])}</span><i style="height:${Math.max(2,amounts[i]/max*100)}px" aria-hidden="true"></i><small>${m.label}</small></div>`).join('')}</div></section>`;
+  const points=amounts.map((amount,i)=>`${20+i*92},${145-amount/max*120}`).join(' ');
+  const curve=`<div class="ui-curve"><svg viewBox="0 0 500 170" role="img" aria-label="Montants facturés hors TVA sur six mois"><path d="M20 25H480M20 85H480M20 145H480" stroke="currentColor" opacity=".1"/><polygon points="20,145 ${points} 480,145" fill="currentColor" opacity=".14"/><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="3"/>${amounts.map((a,i)=>`<circle cx="${20+i*92}" cy="${145-a/max*120}" r="4" fill="currentColor"><title>${months[i].label} : ${euro(a)}</title></circle>`).join('')}</svg><div>${months.map(m=>`<small>${m.label}</small>`).join('')}</div></div>`;
+  const activity=`<section class="ui-activity"><div class="section-head"><h2>${uiChoice==='violet'?'Encaissements et activité':'Évolution du chiffre d’affaires'}</h2><a class="link" href="#dashboard">Rapports →</a></div>${uiChoice==='violet'?`<strong class="activity-amount">${euro(unpaid.reduce((s,d)=>s+totals(d).total,0))}</strong>`:''}<p class="muted">Montants facturés hors TVA · six derniers mois</p>${['violet','turquoise','sable'].includes(uiChoice)?curve:`<div class="ui-chart">${months.map((m,i)=>`<div><span>${euro(amounts[i])}</span><i style="height:${Math.max(2,amounts[i]/max*100)}px" aria-hidden="true"></i><small>${m.label}</small></div>`).join('')}</div>`}</section>`;
   const late=unpaid.filter(d=>d.due && d.due<today());
-  const follow=`<section class="ui-follow"><h2>À suivre</h2><a href="#payments">${uiIcon('clock')}<span>Factures en retard<strong>${late.length} · ${euro(late.reduce((s,d)=>s+totals(d).total,0))}</strong></span></a><a href="#docs" onclick="filter='devis'">${uiIcon('docs')}<span>Devis enregistrés<strong>${quotes.length}</strong></span></a><a href="#recurring">${uiIcon('recurring')}<span>Abonnements<strong>${invoices.filter(d=>d.recurrence).length}</strong></span></a></section>`;
-  return `<div class="interface-home"><section class="ui-greeting"><div><p class="eyebrow">Votre espace de travail</p><h1>Bonjour${company.name?.trim()?' '+esc(company.name.trim()):''} !</h1><p class="muted">Votre activité en un coup d’œil.</p></div></section>${draft?'<div class="notice ui-draft">Un document est en cours. <a href="#wizard">Reprendre mon brouillon →</a></div>':''}${actions}<section class="ui-metrics">${metric('À encaisser',unpaid,'clock',"go('payments')",'unpaid')}${metric('Factures payées',paid,'check',"go('payments')",'paid')}${metric('Devis en attente',quotes,'docs',"filter='devis';go('docs')",'quotes')}</section>${activity}<section class="recent-panel ui-invoices"><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="filter='facture'">Voir toutes les factures →</a></div>${homeTable(invoices.slice(0,8))}</section>${follow}</div>`;
+  const follow=uiChoice==='bleu'?`<section class="ui-follow"><h2>Derniers paiements</h2>${paid.slice(0,4).map(d=>`<a href="#view/${esc(d.id)}">${uiIcon('check')}<span>${esc(client(d).name)}<small>${esc(d.id)}</small><strong>${euro(totals(d).total)}</strong></span></a>`).join('')||'<p class="muted">Aucun paiement enregistré.</p>'}</section>`:`<section class="ui-follow"><h2>À suivre</h2><a href="#payments">${uiIcon('clock')}<span>Factures en retard<strong>${late.length} · ${euro(late.reduce((s,d)=>s+totals(d).total,0))}</strong></span></a><a href="#docs" onclick="filter='devis'">${uiIcon('docs')}<span>Devis enregistrés<strong>${quotes.length}</strong></span></a><a href="#recurring">${uiIcon('recurring')}<span>Abonnements<strong>${invoices.filter(d=>d.recurrence).length}</strong></span></a></section>`;
+  const title=uiChoice==='bleu'?'Vue d’ensemble':uiChoice==='corail'?'Votre activité en un coup d’œil':uiChoice==='citron'?'Bienvenue sur Facture Facile':uiChoice==='bordeaux'?'Accueil':`Bonjour${company.name?.trim()?' '+esc(company.name.trim()):''} !`;
+  return `<div class="interface-home"><section class="ui-greeting"><div><p class="eyebrow">Votre espace de travail</p><h1>${title}</h1><p class="muted">Créez, suivez et gérez vos factures et devis.</p></div></section>${draft?'<div class="notice ui-draft">Un document est en cours. <a href="#wizard">Reprendre mon brouillon →</a></div>':''}${actions}<section class="ui-metrics">${metric('À encaisser',unpaid,'clock',"go('payments')",'unpaid')}${metric('Factures payées',paid,'check',"go('payments')",'paid')}${metric('Devis en attente',quotes,'docs',"filter='devis';go('docs')",'quotes')}</section>${activity}<section class="recent-panel ui-invoices" data-search-scope><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="filter='facture'">Voir toutes les factures →</a></div>${searchField()}${homeTable(invoices.slice(0,8))}</section>${follow}</div>`;
 }
