@@ -23,23 +23,26 @@ Références : [modèles et notices SPF Finances](https://finances.belgium.be/fr
 1. Exécuter dans Supabase le SQL des tables `companies`, `clients`, `documents`, `document_lines`, puis celui de `profiles` si vous souhaitez les profils utilisateurs.
 2. Dans **Project Settings > API Keys**, relever l'URL du projet et la clé **publishable** (`sb_publishable_...`) ou l'ancienne clé **anon**. Les renseigner dans `config.js`. Ne jamais utiliser de clé **secret** ou **service_role** dans un site GitHub Pages.
 3. Dans **Authentication > Providers > Email**, activer la connexion par e-mail. Dans **Authentication > URL Configuration**, définir l'URL publique GitHub Pages comme `Site URL` et l'ajouter dans `Redirect URLs` (par exemple `https://UTILISATEUR.github.io/DEPOT/`). Conserver la confirmation e-mail si souhaitée.
-4. Mettre `index.html`, `style.css`, `app.js`, `radiateur.png`, les quatre images `theme-*.png` et `config.js` à la racine du dépôt GitHub Pages, puis ouvrir le site en HTTPS. La bibliothèque Supabase est chargée depuis jsDelivr.
+4. Mettre `index.html`, `style.css`, `app.js`, `interface.css`, `interface.js`, `vat.js`, le dossier `vendor` et `config.js` à la racine du dépôt GitHub Pages, puis ouvrir le site en HTTPS. La bibliothèque Supabase est chargée depuis jsDelivr.
 5. Créer un compte, confirmer l'e-mail si demandé, se connecter et renseigner « Mon entreprise » avant de créer un document.
 
 Les données de démonstration précédentes ne sont pas importées. Les documents existants dans les anciennes sessions n'étaient pas persistés. Le brouillon en cours reste seulement dans la page jusqu'à l'enregistrement..
 
 **Avant d'émettre de vraies factures** : mettre en place une attribution transactionnelle des numéros côté serveur, vérifier les mentions obligatoires et les règles de TVA applicables, puis contrôler les besoins de facturation électronique. Les numéros générés ici dans le navigateur peuvent se heurter entre deux appareils ou être réutilisés après suppression. Le document est enregistré avant ses lignes ; si l'enregistrement des lignes échoue, l'application tente de supprimer le document incomplet.
 
-Pour mettre à jour un site déjà configuré, conservez votre `config.js` existant : le fichier dans cette archive est un exemple. Le dessin `radiateur.png` est nécessaire au nouvel accueil.
+Pour mettre à jour un site déjà configuré, conservez votre `config.js` existant : le fichier dans cette archive est un exemple. Les illustrations de métiers ont été retirées.
 
-## Thèmes par métier
+## Dix apparences et métier indépendant — 1 octobre 2026
 
-Exécutez `theme-migration.sql` dans l'éditeur SQL Supabase pour sauvegarder le thème du compte et le retrouver sur vos autres appareils. Cette migration ajoute la colonne `theme` à `public.companies` et définit `plombier` par défaut. Sans cette étape, le choix fonctionne sur l'appareil utilisé grâce au stockage local, mais ne se synchronise pas.
+Le bouton **Thème** ouvre les dix apparences avec un aperçu. Couleurs, polices, icônes et agencement changent. La police de l'apparence choisie est chargée à la demande ; les maquettes PNG ne sont pas chargées dans l'application.
 
-Après connexion, utilisez le bouton **Thème** en haut à droite pour choisir plomberie & chauffage, jardinage, électricité, peinture ou menuiserie. Les couleurs, le dessin de l'accueil, les textes d'ambiance et les prestations suggérées changent. Les factures existantes et leurs données ne sont pas modifiées. Le thème plomberie & chauffage et `radiateur.png` restent inchangés et sont sélectionnés par défaut.
+Dans **Paramètres > Métier et prestations**, choisissez votre métier parmi les dix métiers existants et gérez vos prestations personnalisées. Le métier ne modifie plus l'apparence. Les catalogues existants et les documents enregistrés sont conservés. La colonne historique `companies.theme` conserve la clé du métier afin de préserver les catalogues par métier.
 
-Pour mettre à jour votre dépôt existant, publiez `index.html`, `style.css`, `app.js`, les quatre images `theme-*.png` et `theme-migration.sql` dans le même dossier que l'actuel `radiateur.png`. Gardez votre `config.js` déjà configuré.
+Pour synchroniser l'apparence entre appareils, exécutez `supabase/migrations/20261001_interface.sql` dans le SQL Editor de Supabase. Elle ajoute `companies.ui_theme`. Sans cette migration, l'apparence fonctionne et reste mémorisée dans ce navigateur, séparément pour chaque compte. Le métier utilise la colonne historique `theme` et son stockage local de secours.
 
+Publiez ensemble `index.html`, `app.js`, `style.css`, `interface.js`, `interface.css`, `vat.js`, `accueil.html` et le dossier `vendor`. Conservez votre `config.js`. Les anciens thèmes visuels métiers, leurs images et le dossier de copie « theme vert de base » ont été supprimés. Les migrations et les tests restent utiles et sont conservés.
+
+Vérification : `node --test tests/*.test.cjs`. Aperçu isolé avec données fictives : `node tests/interface-preview.cjs`, puis `http://127.0.0.1:4175`. Cet aperçu n'effectue aucun accès à Supabase.
 ## Mise à jour — prestations, abonnements, relances, QR et logo
 
 ### Installation sur votre site existant
@@ -47,7 +50,7 @@ Pour mettre à jour votre dépôt existant, publiez `index.html`, `style.css`, `
 1. Sauvegardez votre dossier actuel et votre base Supabase.
 2. Dans Supabase > SQL Editor, exécutez **migration-suivi.sql**. Elle ajoute deux colonnes à `companies`, une à `documents` et la table `payment_reminders`, avec isolation des relances par utilisateur. Les tables d'origine doivent déjà exister avec leurs politiques de sécurité par utilisateur.
 3. Remplacez **index.html**, **app.js**, **style.css** et ajoutez le dossier **vendor** dans le dossier `Facture` de votre site.
-4. Conservez **config.js**, **radiateur.png** et vos quatre images **theme-*.png** existants. Ils ne sont pas remplacés par l'archive de mise à jour.
+4. Conservez **config.js** et publiez également **interface.js** et **interface.css**. Les images de métiers ne sont plus nécessaires.
 5. Rechargez avec Ctrl+F5, puis vérifiez une facture de test avant utilisation.
 
 ### Prestations

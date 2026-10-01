@@ -20,12 +20,12 @@ const $ = (s) => document.querySelector(s),
   fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString("fr-BE");
 let clients = [];
 let company = { name: "", address: "", vat: "", iban: "", email: "" };
-const THEMES = {
+const PROFESSIONS = {
   plombier: {
     label: "Plomberie & chauffage",
-    image: "radiateur.png",
-    tagline: "Des factures qui coulent de source",
-    footer: "Plomberie<br>Chauffage<br>Confiance au quotidien",
+
+
+
     catalog: [
       ["Entretien de chaudière", 1, 145],
       ["Main-d’œuvre (heure)", 1, 55],
@@ -36,9 +36,9 @@ const THEMES = {
   },
   jardinier: {
     label: "Jardinage",
-    image: "theme-jardinier.png",
-    tagline: "Votre métier prend racine ici",
-    footer: "Jardinage<br>Élagage<br>Le soin du vivant",
+
+
+
     catalog: [
       ["Entretien de jardin", 1, 120],
       ["Taille de haies", 1, 95],
@@ -49,9 +49,9 @@ const THEMES = {
   },
   electricien: {
     label: "Électricité",
-    image: "theme-electricien.png",
-    tagline: "Des devis qui donnent de l’élan",
-    footer: "Électricité<br>Installation<br>Confiance au quotidien",
+
+
+
     catalog: [
       ["Dépannage électrique", 1, 95],
       ["Installation de prise", 1, 75],
@@ -62,9 +62,9 @@ const THEMES = {
   },
   peintre: {
     label: "Peinture",
-    image: "theme-peintre.png",
-    tagline: "La touche juste pour chaque chantier",
-    footer: "Peinture<br>Rénovation<br>Le goût du détail",
+
+
+
     catalog: [
       ["Préparation des surfaces", 1, 120],
       ["Peinture intérieure (m²)", 1, 25],
@@ -75,9 +75,9 @@ const THEMES = {
   },
   menuisier: {
     label: "Menuiserie",
-    image: "theme-menuisier.png",
-    tagline: "Des projets taillés sur mesure",
-    footer: "Menuiserie<br>Agencement<br>Le sens du détail",
+
+
+
     catalog: [
       ["Fabrication sur mesure", 1, 350],
       ["Pose de menuiserie", 1, 180],
@@ -87,17 +87,17 @@ const THEMES = {
     ],
   },
 };
-Object.assign(THEMES, {
-  it: {label:"Spécialiste IT", image:"assets/theme-it.png", tagline:"Vos services IT, simplement", footer:"Sites web<br>Infrastructure<br>Support IT", catalog:[["Support IT (heure)",1,75],["Création de site web",1,590],["Maintenance mensuelle",1,50],["Intégration API",1,250]]},
-  nettoyage: {label:"Nettoyage", image:"assets/theme-nettoyage.png", tagline:"Une gestion nette", footer:"Entretien<br>Nettoyage<br>Services", catalog:[["Nettoyage (heure)",1,35],["Nettoyage de vitres",1,65]]},
-  mecanicien: {label:"Mécanique automobile", image:"assets/theme-mecanicien.png", tagline:"Votre activité en mouvement", footer:"Entretien<br>Diagnostic<br>Réparation", catalog:[["Diagnostic automobile",1,65],["Main-d’œuvre (heure)",1,65]]},
-  photographe: {label:"Photographie", image:"assets/theme-photographe.png", tagline:"Chaque projet a son cadre", footer:"Portrait<br>Événements<br>Reportage", catalog:[["Séance photo",1,150],["Retouche photo (heure)",1,60]]},
-  consultant: {label:"Conseil & formation", image:"assets/theme-consultant.png", tagline:"Place à vos idées", footer:"Conseil<br>Formation<br>Accompagnement", catalog:[["Conseil (jour)",1,800],["Formation (heure)",1,100]]}
+Object.assign(PROFESSIONS, {
+  it: {label:"Spécialiste IT", catalog:[["Support IT (heure)",1,75],["Création de site web",1,590],["Maintenance mensuelle",1,50],["Intégration API",1,250]]},
+  nettoyage: {label:"Nettoyage", catalog:[["Nettoyage (heure)",1,35],["Nettoyage de vitres",1,65]]},
+  mecanicien: {label:"Mécanique automobile", catalog:[["Diagnostic automobile",1,65],["Main-d’œuvre (heure)",1,65]]},
+  photographe: {label:"Photographie", catalog:[["Séance photo",1,150],["Retouche photo (heure)",1,60]]},
+  consultant: {label:"Conseil & formation", catalog:[["Conseil (jour)",1,800],["Formation (heure)",1,100]]}
 });
 let themeChoice = "plombier";
 let themeColumnReady = false;
 const catalogForTheme = () =>
-  company.catalogs?.[themeChoice] ?? THEMES[themeChoice].catalog;
+  company.catalogs?.[themeChoice] ?? PROFESSIONS[themeChoice].catalog;
 
 function themeStorageKey() {
   return `facture-facile-theme:${account.id}`;
@@ -110,37 +110,9 @@ function localTheme() {
   }
 }
 function applyTheme(key) {
-  themeChoice = Object.hasOwn(THEMES, key) ? key : "plombier";
-  document.documentElement.dataset.theme = themeChoice;
-  const theme = THEMES[themeChoice];
-  $("#themelabel").textContent = theme.label;
-  $("#brandtagline").textContent = theme.tagline;
-  $("#sidefoottrades").innerHTML = theme.footer;
-  document.querySelectorAll(".theme-option").forEach((button) => {
-    button.setAttribute(
-      "aria-pressed",
-      String(button.dataset.theme === themeChoice),
-    );
-  });
-}
-async function chooseTheme(key) {
-  if (!account || !Object.hasOwn(THEMES, key)) return;
-  applyTheme(key);
-  try {
-    window.localStorage.setItem(themeStorageKey(), key);
-  } catch {
-    /* Supabase reste la source si le stockage local est indisponible. */
-  }
-  $("#themedialog").close();
-  render();
-  if (themeColumnReady && company.name) {
-    const { error } = await db
-      .from("companies")
-      .update({ theme: key })
-      .eq("user_id", account.id);
-    if (error) showError(error);
-  }
-  toast(`Thème « ${THEMES[key].label} » sélectionné.`);
+  themeChoice = Object.hasOwn(PROFESSIONS, key) ? key : "plombier";
+  uiColumnReady = Object.hasOwn(company, 'ui_theme');
+  applyInterface(company.ui_theme || localInterface() || 'bleu');
 }
 
 let docs = [];
@@ -224,52 +196,8 @@ function homeTable(list) {
     </table></div>`;
 }
 
-function originalHome() {
-  const unpaid = docs.filter((d) => d.type === "facture" && !d.paid);
-  const paid = docs.filter((d) => d.type === "facture" && d.paid);
-  const quotes = docs.filter((d) => d.type === "devis");
-  const name = company.name?.trim();
-  return `
-        <section class="home-hero">
-            <div class="hero-copy">
-                <h1>Bonjour${name ? " " + esc(name) : ""},</h1>
-                <p>Prêt pour une nouvelle journée ?</p>
-                <span class="hero-underline" aria-hidden="true"></span>
-            </div>
-            <div class="hero-art" aria-hidden="true">
-                <img src="${THEMES[themeChoice].image}" alt="">
-            </div>
-        </section>
-        <div class="actions">
-            <button class="action-card main" onclick="start('facture')"><span class="action-icon" aria-hidden="true">▤</span>
-                <span><strong>Créer une facture</strong></span><span class="arrow" aria-hidden="true">→</span></button>
-            <button class="action-card" onclick="start('devis')"><span class="action-icon" aria-hidden="true">▤</span>
-                <span><strong>Créer un devis</strong></span><span class="arrow" aria-hidden="true">→</span></button>
-        </div>
-        ${draft ? '<div class="notice">Vous avez un document en cours. <button class="link" onclick="go(\'wizard\')">Reprendre mon brouillon</button></div>' : ""}
-        <div class="stats">
-            <button class="stat stat-unpaid" onclick="go('payments')">
-                <span class="stat-icon" aria-hidden="true">▢</span>
-                <span class="stat-content"><span>À encaisser</span><strong>${euro(unpaid.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${unpaid.length} facture(s) en attente</small></span>
-                <span class="stat-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="stat stat-paid" onclick="go('payments')">
-                <span class="stat-icon" aria-hidden="true">✓</span>
-                <span class="stat-content"><span>Factures payées</span><strong>${euro(paid.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${paid.length} facture(s) encaissée(s)</small></span>
-                <span class="stat-arrow" aria-hidden="true">›</span>
-            </button>
-            <button class="stat stat-quotes" onclick="filter='devis';go('docs')">
-                <span class="stat-icon" aria-hidden="true">▤</span>
-                <span class="stat-content"><span>Devis en attente</span><strong>${euro(quotes.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${quotes.length} devis en attente</small></span>
-                <span class="stat-arrow" aria-hidden="true">›</span>
-            </button>
-        </div>
-        <section class="recent-panel">
-            <div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="filter='facture'">Voir toutes les factures →</a></div>
-            ${homeTable(docs.filter((d) => d.type === "facture").slice(0, 5))}
-        </section>
-        <div class="bottom-note"><b>ⓘ</b><span>Vos documents sont enregistrés dans votre compte. Vérifiez les mentions et les taux de TVA avant une utilisation professionnelle.</span></div>`;
-}
+function originalHome() { return interfaceHome(); }
+
 function start(type) {
   if (draft) {
     go("wizard");
@@ -774,6 +702,9 @@ async function saveCompany(values) {
   if (!themeUpdate.error) themeColumnReady = true;
   else if (!["42703", "PGRST204"].includes(themeUpdate.error.code))
     console.error(themeUpdate.error);
+  const interfaceUpdate = await db.from('companies').update({ui_theme:uiChoice}).eq('user_id',account.id);
+  if (!interfaceUpdate.error) { uiColumnReady = true; company.ui_theme = uiChoice; }
+  else if (!["42703", "PGRST204"].includes(interfaceUpdate.error.code)) console.error(interfaceUpdate.error);
 }
 
 function readDocument(row, lines) {
@@ -1024,7 +955,7 @@ function featureError(error) { showError(error); }
 function manageCatalog() {
   const entries = structuredClone(catalogForTheme());
   const dialog = featureDialog(
-    "Mes prestations · " + THEMES[themeChoice].label,
+    "Mes prestations · " + PROFESSIONS[themeChoice].label,
     '<p>Ces raccourcis sont enregistrés pour votre métier. Les lignes déjà ajoutées aux factures restent inchangées.</p><div id="catalog-editor"></div><button id="catalog-add">+ Nouvelle prestation</button><button class="primary" id="catalog-save">Enregistrer les prestations</button>',
   );
   function draw() {
@@ -1318,7 +1249,7 @@ function logoHTML(value, shape = company.logo_shape) {
 }
 function companyView() {
   const logo = logoDirty ? logoDraft : company.logo;
-  return originalCompanyView()
+  return originalCompanyView().replace('<form id="companyform"', professionSettings() + '<form id="companyform"')
     .replace(
       '<label class="field">Nom de l’entreprise',
       `<fieldset class="logo-editor"><legend>Logo de l’entreprise</legend><div id="logo-preview">${logoHTML(logo) || "<p>Aucun logo sélectionné.</p>"}</div><label class="field">Format du logo<select name="logo_shape" onchange="previewLogoShape(this.value)"><option value="rectangle" ${company.logo_shape !== 'square' ? 'selected' : ''}>Rectangle — maximum 190 × 100 px</option><option value="square" ${company.logo_shape === 'square' ? 'selected' : ''}>Carré — 120 × 120 px</option></select></label><label class="field">Choisir un logo (PNG, JPEG ou WebP, maximum 2 Mo)<input type="file" accept="image/png,image/jpeg,image/webp" onchange="selectLogo(this.files[0])"></label><button type="button" onclick="removeLogo()">Retirer le logo</button><p class="muted">Le logo sera affiché en haut des nouvelles factures et des devis. Enregistrez vos coordonnées pour conserver ce choix.</p></fieldset><label class="field">Nom de l’entreprise`,
@@ -1639,11 +1570,8 @@ async function sendPeppolTest(id) {
   featureBusy=true;
   try {const result=await integration('peppol-test',d); d.peppol=result.peppol; render(); toast('Demande de test acceptée. Vérifiez sa livraison chez le fournisseur.');} catch(e){featureError(e);} finally{featureBusy=false;}
 }
-for (const key of ['it','nettoyage','mecanicien','photographe','consultant']) {
-  const button=document.createElement('button'); button.className='theme-option'; button.dataset.theme=key;
-  button.innerHTML=`<span aria-hidden="true">${{it:'⌘',nettoyage:'✧',mecanicien:'⚙',photographe:'◎',consultant:'▥'}[key]}</span><strong>${esc(THEMES[key].label)}</strong><small>Prestations personnalisables</small>`;
-  button.onclick=()=>chooseTheme(key); $('#themedialog .theme-options').append(button);
-}
+interfaceOptions();
+applyInterface('bleu');
 initialize();
 
 // --- Dashboard activité -----------------------------------------------------

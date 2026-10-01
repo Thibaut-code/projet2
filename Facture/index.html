@@ -20,7 +20,9 @@
       href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=2026.09.30.2" />
+    <link rel="stylesheet" href="style.css?v=2026.10.01.10" />
+    <link id="interface-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="interface.css?v=2026.10.01.10" />
   </head>
   <body>
     <a href="accueil.html" class="no-print" style="display:block;text-align:center;padding:6px">Découvrir Facture Facile</a>
@@ -29,31 +31,12 @@
       <aside>
         <a class="brand" href="#home" aria-label="Facture Facile, accueil">
           <span class="brand-symbol" aria-hidden="true">
-            <svg viewBox="0 0 74 76" fill="none">
-              <path
-                d="M5 30 37 6l32 24v40H5V30Z"
-                stroke="currentColor"
-                stroke-width="2.4"
-              />
-              <path
-                d="M17 61V35h16v10h19V31M33 41h8m-8 4h8m11-13v11m-9 2v15h11V49"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-              <circle
-                cx="51"
-                cy="47"
-                r="3"
-                stroke="currentColor"
-                stroke-width="2"
-              />
-            </svg>
+            <svg viewBox="0 0 48 48" fill="none"><rect x="3" y="3" width="42" height="42" rx="12" fill="currentColor"/><path d="M16 12h18v6H22v6h10v6H22v8h-6z" fill="white"/></svg>
           </span>
           <span class="brand-words">Facture<br />Facile</span>
         </a>
         <p class="brand-tagline" id="brandtagline">
-          Des factures qui coulent de source
+          Votre facturation, simplement
         </p>
         <nav aria-label="Navigation principale">
           <a href="#home" data-nav="home"
@@ -96,7 +79,7 @@
           >
           <a href="#dashboard" data-nav="dashboard"
             ><span class="nav-icon" aria-hidden="true">⌁</span
-            ><span>Dashboard</span></a
+            ><span>Rapports</span></a
           >
         </nav>
         <div class="side-help">
@@ -109,10 +92,10 @@
           ><span class="side-foot-rule" aria-hidden="true"></span
           ><span class="side-foot-symbol" aria-hidden="true">⚒</span
           ><span id="sidefoottrades"
-            >Plomberie<br />Chauffage<br />Confiance au quotidien</span
+            >Clients · Documents · Paiements</span
           >
         </div>
-        <div class="app-version no-print">Version 2026.09.30.3</div>
+        <div class="app-version no-print">Version 2026.10.01.10</div>
       </aside>
       <div class="workspace">
         <header>
@@ -121,19 +104,19 @@
             <button class="quiet" id="themebutton" hidden>
               Thème
               <span class="theme-current" id="themelabel"
-                >Plomberie &amp; chauffage</span
+                >Bleu et blanc</span
               >
             </button>
             <button class="quiet" id="textsize" aria-label="Agrandir le texte">
               A+ <span>Agrandir le texte</span>
             </button>
-            <a href="#company" class="company-link">Mon entreprise</a>
+            <a href="#company" class="company-link">Paramètres</a>
             <span class="avatar" aria-hidden="true">F.</span>
             <span class="account-name" id="accountname">Mon compte</span>
             <button class="quiet" id="logout" hidden>Déconnexion</button>
           </div>
         </header>
-        <main id="main" tabindex="-1"><h1>Facture Facile : devis et factures pour indépendants</h1><p>Créez vos devis et factures, gérez vos clients et suivez vos paiements. Dix thèmes métiers et cinq modèles personnalisables.</p><noscript>Activez JavaScript pour vous connecter à votre espace de facturation.</noscript></main>
+        <main id="main" tabindex="-1"><h1>Facture Facile : devis et factures pour indépendants</h1><p>Créez vos devis et factures, gérez vos clients et suivez vos paiements. Dix apparences et cinq modèles personnalisables.</p><noscript>Activez JavaScript pour vous connecter à votre espace de facturation.</noscript></main>
       </div>
     </div>
     <div id="toast" role="status"></div>
@@ -154,49 +137,9 @@
       </button>
     </dialog>
     <dialog id="themedialog" aria-labelledby="themeheading">
-      <h2 id="themeheading">Choisissez votre métier</h2>
-      <p>Le thème plomberie &amp; chauffage est celui d’origine.</p>
-      <div class="theme-options">
-        <button
-          class="theme-option"
-          data-theme="plombier"
-          onclick="chooseTheme('plombier')"
-        >
-          <span>♨</span><strong>Plomberie &amp; chauffage</strong
-          ><small>Thème d’origine · Radiateur</small>
-        </button>
-        <button
-          class="theme-option"
-          data-theme="jardinier"
-          onclick="chooseTheme('jardinier')"
-        >
-          <span>❧</span><strong>Jardinage</strong><small>Tronçonneuse</small>
-        </button>
-        <button
-          class="theme-option"
-          data-theme="electricien"
-          onclick="chooseTheme('electricien')"
-        >
-          <span>⚡</span><strong>Électricité</strong
-          ><small>Interrupteur et ampoule</small>
-        </button>
-        <button
-          class="theme-option"
-          data-theme="peintre"
-          onclick="chooseTheme('peintre')"
-        >
-          <span>▨</span><strong>Peinture</strong
-          ><small>Rouleau de peinture</small>
-        </button>
-        <button
-          class="theme-option"
-          data-theme="menuisier"
-          onclick="chooseTheme('menuisier')"
-        >
-          <span>⌁</span><strong>Menuiserie</strong
-          ><small>Rabot et copeaux</small>
-        </button>
-      </div>
+      <h2 id="themeheading">Choisissez votre apparence</h2>
+      <p>Dix interfaces au choix. Votre métier et vos documents restent indépendants de ce choix.</p>
+      <div class="theme-options"></div>
       <button type="button" onclick="this.closest('dialog').close()">
         Fermer
       </button>
@@ -207,6 +150,7 @@
     <script src="vendor/qrcode_UTF8.js"></script>
     <script src="vendor/html2pdf.bundle.min.js"></script>
     <script src="vat.js?v=2026.09.30.1"></script>
-    <script src="app.js?v=2026.10.01.1"></script>
+    <script src="interface.js?v=2026.10.01.10"></script>
+    <script src="app.js?v=2026.10.01.10"></script>
   </body>
 </html>
