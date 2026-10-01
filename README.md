@@ -13,3 +13,9 @@ Le formulaire de contact conserve le service FormSubmit et les coordonnées exis
 Les tarifs sont indicatifs ; le devis précise le périmètre et les conditions.
 
 Les fichiers peuvent être publiés ensemble sur l’hébergement statique existant. Aucun déploiement automatique n’est effectué par ces modifications.
+
+## Trois nouvelles démonstrations premium
+
+Aurelia (immobilier), Maison Braise (restaurant) et Vert & Pierre (paysagisme) sont ajoutés à `creations.html`. Les exports publiables sont dans `demos/`, et les sources Next.js / Tailwind / Framer Motion dans `premium-sites/`.
+
+Pour les ouvrir localement : `cd premium-sites`, puis `npm run serve`, et visiter http://localhost:4173/creations.html. Les détails de construction, fonctions et raccordements clients sont dans `premium-sites/README.md`.
