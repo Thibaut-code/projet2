@@ -149,6 +149,8 @@ let db = null;
 let busy = false;
 let authMode = "login";
 let sessionGeneration = 0;
+let dataState = "idle";
+let dataLoad = null;
 let draft = null,
   step = 1,
   filter = "all",
@@ -527,6 +529,10 @@ function originalRender() {
           (!a.dataset.filter || a.dataset.filter === filter),
       ),
     );
+  if (dataState !== "ready") {
+    $("#main").innerHTML = `<section class="panel" role="status" aria-live="polite"><h2>${dataState === "error" ? "Vos données n’ont pas pu être chargées." : "Chargement de votre espace…"}</h2><p>${dataState === "error" ? "Vérifiez votre connexion et réessayez." : "Nous récupérons vos factures et leurs montants."}</p>${dataState === "error" ? '<button class="primary" onclick="loadData().catch(showError)">Réessayer</button>' : ''}</section>`;
+    return;
+  }
   let html;
   if (route === "wizard") html = wizard();
   else if (route === "clients") html = clientsView();
@@ -802,8 +808,33 @@ function readDocument(row, lines) {
   };
 }
 
-async function loadData() {
+function loadData() {
+  if (!account) return Promise.resolve();
   const userId = account.id;
+  const generation = sessionGeneration;
+  if (dataLoad?.userId === userId && dataLoad.generation === generation)
+    return dataLoad.promise;
+  const task = { userId, generation, promise: null };
+  task.promise = fetchData(userId, generation).catch(error => {
+    if (account?.id === userId && sessionGeneration === generation && dataState !== "ready") {
+      dataState = "error";
+      render();
+    }
+    throw error;
+  }).finally(() => { if (dataLoad === task) dataLoad = null; });
+  dataLoad = task;
+  return task.promise;
+}
+
+async function fetchData(userId, generation) {
+  if (dataState !== "ready") {
+    dataState = "loading";
+    render();
+  }
+  // Secondary data must not hold up the invoice amounts.
+  const secondary = Promise.all([loadReminders(userId), loadVAT(userId)]).catch(error => {
+    if (account?.id === userId && sessionGeneration === generation) showError(error);
+  });
   const [clientResult, companyResult, documentResult, lineResult] =
     await Promise.all([
       db
@@ -831,7 +862,7 @@ async function loadData() {
   ]) {
     if (result.error) throw result.error;
   }
-  if (account?.id !== userId) return;
+  if (account?.id !== userId || sessionGeneration !== generation) return;
   clients = clientResult.data || [];
   company = companyResult.data || {
     name: "",
@@ -842,16 +873,27 @@ async function loadData() {
   };
   themeColumnReady = Object.hasOwn(company, "theme");
   applyTheme(themeColumnReady ? company.theme : localTheme());
-  docs = (documentResult.data || []).map((row) =>
-    readDocument(row, lineResult.data || []),
-  );
+  const linesByDocument = new Map();
+  for (const line of lineResult.data || []) {
+    const lines = linesByDocument.get(line.document_id) || [];
+    lines.push(line);
+    linesByDocument.set(line.document_id, lines);
+  }
+  docs = (documentResult.data || []).map(row => readDocument(row, linesByDocument.get(row.id) || []));
+  const conversions = new Map(docs.filter(doc => doc.convertedFrom).map(doc => [doc.convertedFrom, doc]));
   for (const doc of docs) {
-    const converted = docs.find((other) => other.convertedFrom === doc.dbId);
+    const converted = conversions.get(doc.dbId);
     if (converted) doc.converted = converted.id;
   }
-  await loadReminders(userId);
-  await loadVAT(userId);
+  dataState = "ready";
   render();
+  secondary.then(() => {
+    if (account?.id !== userId || sessionGeneration !== generation) return;
+    const route = location.hash.slice(1) || "home";
+    // Do not replace a form while the user is typing.
+    if (!draft && !document.getElementById("feature-dialog") &&
+        (["home", "dashboard"].includes(route) || route.startsWith("view/"))) render();
+  });
 }
 
 async function persistDocument(source, convertedFrom = null) {
@@ -885,6 +927,7 @@ async function initialize() {
     if (nextId === account?.id) return;
     const generation = ++sessionGeneration;
     account = session?.user || null;
+    dataState = account ? "loading" : "idle";
     clients = [];
     docs = [];
     reminders = [];
@@ -898,10 +941,12 @@ async function initialize() {
     applyTheme(account ? localTheme() : "plombier");
     draft = null;
     render();
-    if (account)
-      loadData().catch((error) => {
+    if (account) setTimeout(() => {
+      if (generation !== sessionGeneration || !account) return;
+      loadData().catch(error => {
         if (generation === sessionGeneration) showError(error);
       });
+    }, 0);
   });
   const { data, error } = await db.auth.getSession();
   if (error) showError(error);
@@ -1339,6 +1384,7 @@ function validBelgianIBAN(value) {
 }
 function render() {
   originalRender();
+  if (account && dataState !== "ready") return;
   if (account && location.hash === "#recurring")
     $("#main").innerHTML = recurringView();
   if (account && location.hash === "#dashboard")
