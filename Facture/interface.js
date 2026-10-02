@@ -10,7 +10,8 @@ const UI_THEMES = {
   bordeaux: { label: 'Blanc et bordeaux', font: 'Source Sans 3', heading: 'Georgia', layout: 'top-right', icon: 'line', colors: ['#faf9fb','#ffffff','#26212a','#831a3c','#ffffff','#26212a'] },
   cyan: { label: 'Ardoise et cyan', font: 'Manrope', layout: 'analytics', icon: 'solid', colors: ['#f1f7fd','#ffffff','#192d4b','#007fcb','#192d4b','#ffffff'] },
   sable: { label: 'Sable et chocolat', font: 'DM Sans', layout: 'warm', icon: 'soft', colors: ['#f7f2eb','#fffdfa','#35271e','#986325','#35271e','#ffffff'] },
-  classique: { label: 'Original · Vert et terracotta', font: 'DM Sans', heading: '"Fraunces", Georgia, serif', layout: 'classic', icon: 'line', colors: ['#fffdfa','#fffdfa','#123b2f','#bd5537','#12382d','#fffdfa'] }
+  classique: { label: 'Original · Vert et terracotta', font: 'DM Sans', heading: '"Fraunces", Georgia, serif', layout: 'classic', icon: 'line', colors: ['#fffdfa','#fffdfa','#123b2f','#bd5537','#12382d','#fffdfa'] },
+  orbytek: { label: 'Orbytek · Horizon bleu', font: 'Inter', layout: 'orbit', icon: 'line', colors: ['#060f17','#0c1a25','#f2f7ff','#29bdf2','#050f18','#e6f1ff'] }
 };
 let uiChoice = 'bleu';
 let uiColumnReady = false;
@@ -37,13 +38,13 @@ function applyInterface(key) {
   ['--ui-canvas','--ui-surface','--ui-ink','--ui-accent','--ui-nav','--ui-nav-ink'].forEach((name,i) => root.style.setProperty(name,t.colors[i]));
   root.style.setProperty('--ui-font', `"${t.font}", Arial, sans-serif`);
   root.style.setProperty('--ui-heading', t.heading || `"${t.font}", Arial, sans-serif`);
-  root.style.setProperty('--ui-action-ink', ['citron','violet','orange'].includes(uiChoice) ? '#151515' : '#ffffff');
+  root.style.setProperty('--ui-action-ink', ['citron','violet','orange','orbytek'].includes(uiChoice) ? '#151515' : '#ffffff');
   const marks={bleu:'<path d="M8 24 20 8l12 10-12 16z"/><path d="m22 14 18 12-14 16-10-10z" opacity=".6"/>',violet:'<path d="M8 5h30v10H19v9h15v9H19v10H8z"/>',corail:'<circle cx="14" cy="14" r="9"/><circle cx="34" cy="14" r="9"/><circle cx="14" cy="34" r="9"/><circle cx="34" cy="34" r="9" opacity=".6"/>',citron:'<path d="M18 4h13L14 26H2zM32 18h13L28 40H15z"/>',turquoise:'<path d="M2 23Q13 4 26 16T46 14Q36 35 23 25T2 23ZM2 35Q13 18 26 29T46 26Q36 47 23 37T2 35Z"/>',peche:'<path d="M5 36V18a15 15 0 0 1 30 0L19 36z"/><rect x="19" y="23" width="23" height="22" rx="6" opacity=".5"/>',orange:'<path d="M6 16 40 2v12L6 28zM6 33l25-11v12L6 45z"/>',bordeaux:'<path d="M4 5h39Q39 20 25 20H4zM4 25h26Q27 38 15 38H4zM4 39h11v8H4z"/>',cyan:'<path d="m24 2 20 11v23L24 47 4 36V13l10 6v11l10 6 10-6V19l-10-6-10 6-10-6z"/>',classique:'<path d="M4 22 24 4l20 18v22H4zM14 44V25h12v19M26 18h8v12h-8" fill="none" stroke="currentColor" stroke-width="2"/>',sable:'<path d="M6 43V17Q6 4 18 4h5v12h-5v27zM25 43V28q0-12 13-12h6v12h-7v15z"/>'};
-  const mark=document.querySelector('.brand-symbol');if(mark)mark.innerHTML=`<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">${marks[uiChoice]}</svg>`;
+  const mark=document.querySelector('.brand-symbol');if(mark)mark.innerHTML=`<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">${marks[uiChoice === 'orbytek' ? 'classique' : uiChoice]}</svg>`;
   const fontLink = document.getElementById('interface-font');
   if (fontLink) fontLink.href = `https://fonts.googleapis.com/css2?family=${t.font.replaceAll(' ','+')}:wght@400;500;600;700&display=swap`;
   $('#themelabel').textContent = t.label;
-  $('#brandtagline').textContent = uiChoice === 'classique' ? 'Des factures qui coulent de source' : 'Votre facturation, simplement';
+  $('#brandtagline').textContent = uiChoice === 'orbytek' ? 'par ORBYTEK' : uiChoice === 'classique' ? 'Des factures qui coulent de source' : 'Votre facturation, simplement';
   $('#sidefoottrades').textContent = 'Clients · Documents · Paiements';
   document.querySelectorAll('[data-nav]').forEach(a => { const span = a.querySelector('.nav-icon'); if(span) span.innerHTML = uiIcon(a.dataset.nav); });
   document.querySelectorAll('.theme-option').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === uiChoice)));
@@ -84,6 +85,7 @@ async function chooseProfession(key) {
 }
 function interfaceHome() {
   if (uiChoice === 'classique') return classicHome();
+  if (uiChoice === 'orbytek') return orbytekHome();
   const invoices = docs.filter(d=>d.type==='facture'), unpaid=invoices.filter(d=>!d.paid), paid=invoices.filter(d=>d.paid), quotes=docs.filter(d=>d.type==='devis');
   const metric=(title,list,icon,route,cls)=>`<button class="ui-metric ${cls}" onclick="${route}">${uiIcon(icon)}<span>${title}<strong>${euro(list.reduce((sum,d)=>sum+totals(d).total,0))}</strong><small>${list.length} ${title==='Devis en attente'?'devis':'facture(s)'}</small></span></button>`;
   const actions=`<section class="ui-actions"><h2>Actions rapides</h2><button class="primary" onclick="start('facture')">${uiIcon('plus')} Nouvelle facture</button><button onclick="start('devis')">${uiIcon('docs')} Nouveau devis</button></section>`;
@@ -96,6 +98,29 @@ function interfaceHome() {
   const follow=uiChoice==='bleu'?`<section class="ui-follow"><h2>Derniers paiements</h2>${paid.slice(0,4).map(d=>`<a href="#view/${esc(d.id)}">${uiIcon('check')}<span>${esc(client(d).name)}<small>${esc(d.id)}</small><strong>${euro(totals(d).total)}</strong></span></a>`).join('')||'<p class="muted">Aucun paiement enregistré.</p>'}</section>`:`<section class="ui-follow"><h2>À suivre</h2><a href="#payments">${uiIcon('clock')}<span>Factures en retard<strong>${late.length} · ${euro(late.reduce((s,d)=>s+totals(d).total,0))}</strong></span></a><a href="#docs" onclick="event.preventDefault();openDocuments('devis')">${uiIcon('docs')}<span>Devis enregistrés<strong>${quotes.length}</strong></span></a><a href="#recurring">${uiIcon('recurring')}<span>Abonnements<strong>${invoices.filter(d=>d.recurrence).length}</strong></span></a></section>`;
   const title=uiChoice==='bleu'?'Vue d’ensemble':uiChoice==='corail'?'Votre activité en un coup d’œil':uiChoice==='citron'?'Bienvenue sur Facture Facile':uiChoice==='bordeaux'?'Accueil':`Bonjour${company.name?.trim()?' '+esc(company.name.trim()):''} !`;
   return `<div class="interface-home"><section class="ui-greeting"><div><p class="eyebrow">Votre espace de travail</p><h1>${title}</h1><p class="muted">Créez, suivez et gérez vos factures et devis.</p></div></section>${draft?'<div class="notice ui-draft">Un document est en cours. <a href="#wizard">Reprendre mon brouillon →</a></div>':''}${actions}<section class="ui-metrics">${metric('À encaisser',unpaid,'clock',"go('payments')",'unpaid')}${metric('Factures payées',paid,'check',"go('payments')",'paid')}${metric('Devis en attente',quotes,'docs',"openDocuments('devis')",'quotes')}</section>${activity}<section class="recent-panel ui-invoices" data-search-scope><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="event.preventDefault();openDocuments('facture')">Voir toutes les factures →</a></div>${searchField()}${homeTable(invoices.slice(0,8))}</section>${follow}</div>`;
+}
+
+function orbytekHome() {
+  const invoices = docs.filter(d => d.type === 'facture');
+  const unpaid = invoices.filter(d => !d.paid), paid = invoices.filter(d => d.paid);
+  const quotes = docs.filter(d => d.type === 'devis');
+  const name = teamContext?.display_name || account?.user_metadata?.full_name || company.name?.trim();
+  const metric = (title, list, icon, route, count) => `<button class="orbit-metric" onclick="${route}">${uiIcon(icon)}<span><span>${title}</span><strong>${euro(list.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${list.length} ${count}</small></span><span class="orbit-chevron" aria-hidden="true">›</span></button>`;
+  return `<div class="orbit-home">
+    <section class="orbit-hero"><h1>Bonjour${name ? ' ' + esc(name) : ''},</h1><p>Prêt pour une nouvelle journée ?</p><span class="orbit-rule" aria-hidden="true"></span>
+      <div class="orbit-actions"><button class="primary" onclick="start('facture')">${uiIcon('docs')} Créer une facture <span aria-hidden="true">→</span></button><button onclick="start('devis')">${uiIcon('docs')} Créer un devis <span aria-hidden="true">→</span></button></div>
+    </section>
+    ${draft ? '<div class="notice">Un document est en cours. <a class="link" href="#wizard">Reprendre mon brouillon →</a></div>' : ''}
+    <section class="orbit-metrics" aria-label="Suivi de vos documents">
+      ${metric('À encaisser', unpaid, 'docs', "go('payments')", 'facture(s) en attente')}
+      ${metric('Factures payées', paid, 'check', "go('payments')", 'facture(s) encaissée(s)')}
+      ${metric('Devis en attente', quotes, 'docs', "openDocuments('devis')", 'devis en attente')}
+    </section>
+    <section class="orbit-invoices" data-search-scope><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="event.preventDefault();openDocuments('facture')">Voir toutes les factures →</a></div>
+      ${invoices.length ? searchField() + homeTable(invoices.slice(0, 8)) : `<div class="orbit-empty">${uiIcon('docs')}<p>Aucune facture pour le moment.</p></div>`}
+    </section>
+    <p class="orbit-note">${uiIcon('clock')}<span>Vos documents sont enregistrés dans votre compte. Vérifiez les mentions et les taux de TVA avant une utilisation professionnelle.</span></p>
+  </div>`;
 }
 
 function classicHome() {

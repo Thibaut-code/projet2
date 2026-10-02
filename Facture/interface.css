@@ -1,4 +1,4 @@
-/* Eleven interface identities. Document/PDF styles remain separately controlled. */
+/* Twelve interface identities. Document/PDF styles remain separately controlled. */
 @media screen {
   :root[data-interface] { --green:var(--ui-accent);--green-dark:var(--ui-nav);--ink:var(--ui-ink);--canvas:var(--ui-canvas);--warm-white:var(--ui-surface);--accent:var(--ui-accent);--muted:color-mix(in srgb,var(--ui-ink) 68%,var(--ui-surface));--line:color-mix(in srgb,var(--ui-ink) 16%,var(--ui-surface));--focus:var(--ui-accent);--tint-1:var(--ui-surface);--tint-2:var(--ui-surface);--tint-3:var(--ui-surface);font-size:16px; }
   [data-interface] body {background:var(--ui-canvas);color:var(--ui-ink);font-family:var(--ui-font);}

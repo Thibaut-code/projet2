@@ -1,5 +1,11 @@
 # Facture Facile avec Supabase
 
+## Thème 12 Orbytek · Horizon bleu — version 2026.10.02.3
+
+L'apparence 12 reprend la maquette Orbytek : noir profond, bleu électrique, horizon terrestre, trois indicateurs et dernières factures. Les boutons utilisent les parcours habituels, y compris le choix de continuer ou d'abandonner le brouillon. Le nom d'accueil vient du profil de la personne connectée ; les montants viennent des documents du compte.
+
+Publiez aussi `orbytek.css` et `assets/orbytek-earth.webp` dans le dossier Facture. Pour synchroniser cette apparence entre appareils, appliquez `supabase/migrations/20261002_orbytek_interface.sql` après `20261002_original_interface.sql`. La migration est fournie, mais n'est pas exécutée automatiquement sur la base réelle.
+
 ## Mail, brouillons et thème original — version 2026.10.02.2
 
 Le contact Orbytek et le destinataire du formulaire utilisent `thibaut@orbytek.be`.

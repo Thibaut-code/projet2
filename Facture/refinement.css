@@ -1,4 +1,4 @@
-/* Compositions des onze apparences, dont l'accueil original. */
+/* Compositions des douze apparences, dont l'accueil original. */
 [hidden] {display:none !important;}
 .list-search {display:flex;align-items:center;gap:10px;width:min(100%,620px);margin:0 0 18px;padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--warm-white);color:var(--muted);}
 .list-search input {width:100%;min-width:0;border:0!important;outline-offset:6px;background:transparent!important;padding:0!important;min-height:28px;font-size:.9rem;}
