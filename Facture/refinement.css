@@ -152,3 +152,11 @@
    [data-interface] aside nav a {flex-direction:row;}
  }
 }
+/* Application discovery belongs with help, rather than above the workspace. */
+@media screen {
+  .side-help .discover-app {display:block;margin-top:12px;text-decoration:underline;text-underline-offset:3px;}
+  [data-layout=top] aside,[data-layout=top-left] aside,[data-layout=top-right] aside {flex-wrap:wrap;}
+  [data-layout=top] .side-help,[data-layout=top-left] .side-help,[data-layout=top-right] .side-help {display:flex;flex-direction:column;align-items:flex-start;margin:0;padding:0;border:0;font-size:.75rem;}
+  [data-layout=top] .side-help :is(.help-icon,strong,p),[data-layout=top-left] .side-help :is(.help-icon,strong,p),[data-layout=top-right] .side-help :is(.help-icon,strong,p) {display:none;}
+  [data-layout=top] .side-help .discover-app,[data-layout=top-left] .side-help .discover-app,[data-layout=top-right] .side-help .discover-app {margin-top:4px;}
+}

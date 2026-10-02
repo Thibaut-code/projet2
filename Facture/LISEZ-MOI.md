@@ -42,11 +42,11 @@ Sans la migration équipe, l’application garde le fonctionnement individuel et
 
 Références techniques pour les contrôles serveur : [sécurité des fonctions PostgreSQL](https://www.postgresql.org/docs/16/sql-createfunction.html), [règles d’accès aux lignes](https://www.postgresql.org/docs/17/ddl-rowsecurity.html).
 
-## Ouverture de messagerie — correction du destinataire
+## E-mail avec PDF joint — parcours simplifié du 3 octobre 2026
 
-Après **Préparer le message et le PDF**, le bouton **Ouvrir ma messagerie** utilise un lien `mailto:` avec destinataire, objet et message encodés. Configurez Outlook comme messagerie par défaut pour ouvrir le message dans Outlook. Téléchargez le PDF et joignez-le au message avant envoi. Le partage Windows de PDF a été retiré de ce parcours, car il ne transmet pas de destinataire.
+Le bouton **Ouvrir ma messagerie** génère le PDF et un fichier `.eml` contenant le destinataire, l’objet, le message et la pièce jointe. Pour une relance, le bouton **Envoyer un rappel** fait la même chose et enregistre seulement la préparation dans l’historique. Aucun envoi n’est automatique.
 
-L’option `.eml` reste disponible et contient le destinataire, l’objet, le message et le PDF joint ; sa prise en charge dépend de la messagerie. Aucun envoi n’est automatique. Les champs du lien et la pièce jointe du fichier EML ont été vérifiés par `node tests/email.test.cjs` ; l’ouverture dans Outlook réel reste à vérifier sur votre poste.
+Ouvrez le fichier depuis les téléchargements, puis choisissez **Transférer** dans le nouvel Outlook. Renseignez l’adresse indiquée dans Facture, vérifiez que le PDF est joint et envoyez. Enfin, confirmez l’envoi dans Facture. Les anciennes étapes et boutons de téléchargement séparé ont été retirés. Un navigateur ne peut pas garantir l’ouverture automatique d’une application locale avec une pièce jointe. Le fichier est un message normal (sans `X-Unsent`) pour éviter les pertes de pièces jointes signalées avec certains brouillons du nouvel Outlook. L’ouverture et le transfert réels restent à vérifier sur votre poste. Documentation : https://support.microsoft.com/en-us/outlook/mail/open-eml-msg-and-oft-files-in-new-outlook-and-outlook-on-the-web
 
 ## TVA belge trimestrielle — mise à jour du 30 septembre 2026
 
@@ -109,7 +109,7 @@ Les rappels sont affichés dans l'application lorsqu'elle est ouverte ou recharg
 
 ### Relances des impayés
 
-Sur une facture non payée dont la date limite est dépassée, choisissez **Relancer : retard de paiement**. Vous pouvez corriger le destinataire, l'objet et le message. L'application enregistre la préparation puis ouvre votre messagerie avec `mailto:`. Si elle ne s'ouvre pas, utilisez le lien proposé ou copiez le message de l'historique. Ajoutez vous-même le PDF si nécessaire et envoyez le message depuis votre messagerie.
+Sur une facture non payée dont la date limite est dépassée, choisissez **Relancer : retard de paiement**. Vous pouvez corriger le destinataire, l'objet et le message. **Envoyer un rappel** crée le fichier e-mail avec la facture PDF jointe et enregistre la préparation. Ouvrez le fichier dans Outlook et transférez-le au destinataire indiqué, puis confirmez l’envoi dans l’application.
 
 Après l'envoi, cliquez sur **J’ai envoyé cette relance**. L'historique conserve le destinataire, le texte, la date de préparation et la date de confirmation. Une confirmation est déclarative : il ne s'agit pas d'une preuve de livraison. Fermer la fenêtre ne confirme pas l'envoi. Chaque nouvelle préparation produit une entrée distincte. La suppression d'une facture supprime aussi ses relances.
 

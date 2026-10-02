@@ -2,6 +2,12 @@
 let teamContext = null;
 function companyOwner(fallback = account?.id) { return teamContext?.owner_id || fallback; }
 function employeeName() { return teamContext?.display_name || account?.user_metadata?.full_name || account?.email?.split('@')[0] || 'Mon compte'; }
+function updateAccountIdentity() {
+  const name=employeeName();
+  $('#accountname').textContent=name;
+  const avatar=$('#accountavatar');
+  if(avatar) avatar.textContent=account ? Array.from(name.trim())[0]?.toLocaleUpperCase('fr-BE') || '?' : '?';
+}
 async function resolveTeam(userId, generation) {
   if (!db?.rpc) return; // Legacy installations and isolated previews.
   const {data,error} = await db.rpc('company_context');
@@ -18,7 +24,7 @@ function teamSettings() {
 }
 async function saveEmployeeName() {
   const name=$('#employee-name').value.trim(); if(!name) return toast('Indiquez votre nom.');
-  try {const {error}=await db.rpc('set_employee_name',{employee_name:name});if(error)throw error;teamContext.display_name=name;$('#accountname').textContent=name;toast('Votre nom est enregistré.');}catch(error){showError(error);}
+  try {const {error}=await db.rpc('set_employee_name',{employee_name:name});if(error)throw error;teamContext.display_name=name;updateAccountIdentity();toast('Votre nom est enregistré.');}catch(error){showError(error);}
 }
 async function openTeam() {
   try {

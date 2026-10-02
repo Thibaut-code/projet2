@@ -17,7 +17,12 @@ async function main(){
  assert.match(text,/To: client@example.com\r\n/);
  assert.match(text,/Content-Disposition: attachment; filename="facture.pdf"/);
  assert.match(text,/cGRmLXRlc3Q=/);
- assert.match(app,/#open-document-email'\)\.onclick=\(\)=>\{window\.location\.href=mailto;/);
+ assert.ok(!/^X-Unsent:/m.test(text));
+ const senderDraft=await vm.runInContext(`emailDraftBlob(new Blob(['pdf-test']),'facture.pdf','client@example.com','Facture été','Bonjour','thibaut@example.com')`,context);
+ assert.match(await senderDraft.text(),/^From: thibaut@example.com\r\n/);
+ await assert.rejects(vm.runInContext(`emailDraftBlob(new Blob(['pdf-test']),'facture.pdf','client@example.com','Facture été','Bonjour','sender\\r\\nBcc: autre@example.com')`,context));
+ assert.ok(!app.includes('id="download-document-pdf"'));
+ assert.ok(!app.includes('id="download-email"'));
  assert.ok(!app.includes('navigator.share({files:[file],title:subject,text:body})'));
  console.log('E-mail : destinataire, accents, caractères spéciaux, retours de ligne et pièce jointe EML vérifiés.');
 }

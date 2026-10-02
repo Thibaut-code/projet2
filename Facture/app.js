@@ -463,7 +463,7 @@ function originalRender() {
     month: "long",
     year: "numeric",
   });
-  $("#accountname").textContent = employeeName();
+  updateAccountIdentity();
   const route = location.hash.slice(1) || "home";
   document
     .querySelectorAll("[data-nav]")
@@ -567,7 +567,7 @@ function originalRender() {
         .then(() => {
           company = { ...company, ...values, theme: themeChoice };
           logoDirty = false;
-          $("#accountname").textContent = employeeName();
+          updateAccountIdentity();
           toast("Coordonnées enregistrées.");
           go("home");
         })
@@ -1200,14 +1200,16 @@ function remindClient(id) {
   const body = `Bonjour ${c.name},\n\nSauf erreur de notre part, la facture ${d.id} d’un montant de ${euro(totals(d).total)}, arrivée à échéance le ${fmt(d.due)}, reste impayée.\n\nMerci de procéder au règlement sur le compte ${biz.iban || "[compte à préciser]"}, avec la communication ${d.id}.\n\nSi le paiement a déjà été effectué, merci de ne pas tenir compte de ce rappel.\n\nBien à vous,\n${biz.name}`;
   const dialog = featureDialog(
     "Relance pour retard de paiement",
-    `<form id="reminder-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email || "")}"></label><label class="field">Objet<input name="subject" required value="${esc(subject)}"></label><label class="field">Message<textarea name="body" rows="10" required>${esc(body)}</textarea></label><p class="muted">Votre messagerie s’ouvrira. Vous devez y envoyer le message, puis confirmer l’envoi dans l’historique. Aucun PDF n’est joint automatiquement.</p><button class="primary">Préparer l’e-mail et enregistrer la relance</button></form>`,
+    `<form id="reminder-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email || "")}"></label><label class="field">Objet<input name="subject" required value="${esc(subject)}"></label><label class="field">Message<textarea name="body" rows="10" required>${esc(body)}</textarea></label><p class="muted">Le bouton crée un fichier e-mail avec la facture PDF déjà jointe. Ouvrez le fichier dans Outlook, puis transférez-le au destinataire indiqué.</p><button class="primary">Envoyer un rappel</button></form>`,
   );
   dialog.querySelector("form").onsubmit = async (e) => {
     e.preventDefault();
     const button = e.target.querySelector("button");
     button.disabled = true;
+    button.textContent='Création de l’e-mail et du PDF…';
     try {
       const values = Object.fromEntries(new FormData(e.target));
+      const draft=await prepareDocumentEmail(d,values);
       const result = await db
         .from("payment_reminders")
         .insert({
@@ -1220,12 +1222,12 @@ function remindClient(id) {
         .single();
       if (result.error) throw result.error;
       reminders.unshift(result.data);
-      const url = `mailto:${encodeURIComponent(values.recipient)}?subject=${encodeURIComponent(values.subject)}&body=${encodeURIComponent(values.body)}`;
-      dialog.innerHTML = `<h2>Relance préparée</h2><p>L’historique est enregistré. Ouvrez votre messagerie, envoyez le message, puis confirmez l’envoi.</p><a class="primary mail-action" href="${esc(url)}">Ouvrir ma messagerie</a><button onclick="confirmReminder('${result.data.id}')">J’ai envoyé cette relance</button><button onclick="this.closest('dialog').close();render()">Fermer sans confirmer</button>`;
-      location.href = url;
+      downloadAttachment(draft,'rappel-'+documentFilename(d)+'.eml');
+      dialog.innerHTML = `<h2>Relance prête avec PDF joint</h2><p>Ouvrez <strong>${esc('rappel-'+documentFilename(d)+'.eml')}</strong> dans les téléchargements du navigateur. Dans Outlook, choisissez <strong>Transférer</strong>, renseignez <strong>${esc(values.recipient)}</strong> et envoyez le message. Le PDF est déjà joint.</p><p>L’envoi n’est pas encore confirmé dans l’historique.</p><button onclick="confirmReminder('${result.data.id}')">J’ai envoyé cette relance</button><button onclick="this.closest('dialog').close();render()">Fermer</button>`;
     } catch (error) {
       featureError(error);
       button.disabled = false;
+      button.textContent='Envoyer un rappel';
     }
   };
 }
@@ -1484,13 +1486,17 @@ function documentMailto(recipient,subject,body) {
   const text=String(body).replace(/\r\n|\r|\n/g,'\r\n');
   return `mailto:${encodeURIComponent(recipient)}?subject=${encodeURIComponent(String(subject).replace(/[\r\n]/g,' '))}&body=${encodeURIComponent(text)}`;
 }
-async function emailDraftBlob(pdf,filename,recipient,subject,body) {
+async function emailDraftBlob(pdf,filename,recipient,subject,body,sender='') {
   if (/[\r\n]/.test(recipient)) throw Error('Adresse e-mail invalide.');
+  if (/[\r\n]/.test(sender)) throw Error('Adresse expéditeur invalide.');
   const bytes = new Uint8Array(await pdf.arrayBuffer());
   let binary=''; for(let i=0;i<bytes.length;i+=8192) binary+=String.fromCharCode(...bytes.subarray(i,i+8192));
   const wrap = s => s.match(/.{1,76}/g)?.join('\r\n') || '';
   const boundary='facture_'+Array.from(crypto.getRandomValues(new Uint8Array(16)),b=>b.toString(16).padStart(2,'0')).join('');
-  const headers=['X-Unsent: 1','To: '+recipient,
+  // A normal saved message preserves attachments when forwarded in new Outlook.
+  // X-Unsent is deliberately omitted: some new Outlook versions lose its PDF.
+  const headers=[...(sender?['From: '+sender]:[]),'To: '+recipient,
+    'Date: '+new Date().toUTCString(),
     'Subject: =?UTF-8?B?'+base64UTF8(subject.replace(/[\r\n]/g,' '))+'?=',
     'MIME-Version: 1.0','Content-Type: multipart/mixed; boundary="'+boundary+'"','',
     '--'+boundary,'Content-Type: text/plain; charset=UTF-8','Content-Transfer-Encoding: base64','',wrap(base64UTF8(body)),
@@ -1498,25 +1504,28 @@ async function emailDraftBlob(pdf,filename,recipient,subject,body) {
     'Content-Transfer-Encoding: base64','',wrap(btoa(binary)),'--'+boundary+'--',''];
   return new Blob([headers.join('\r\n')],{type:'message/rfc822'});
 }
+async function prepareDocumentEmail(d,values) {
+  const recipient=String(values.recipient || '').trim();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) throw Error('Adresse e-mail invalide.');
+  const pdf=await documentPDF(d);
+  return emailDraftBlob(pdf,documentFilename(d)+'.pdf',recipient,String(values.subject || ''),String(values.body || ''),account?.email || '');
+}
 function sendDocument(id) {
   const d = docs.find(x => x.id === id); if (!d) return;
   const c = d.customer || client(d);
-  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Préparez votre message avec le destinataire et le PDF. Vous pourrez ouvrir votre messagerie ou télécharger un fichier e-mail avec le PDF déjà joint.</p><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Préparer le message et le PDF</button></form><div id="send-confirm" aria-live="polite"></div>`);
+  featureDialog('Envoyer le document', `<p>${esc(id)} · ${esc(c.name)}</p>${clients.find(x=>x.id===d.client)?.note ? `<p class="notice">Note interne : ${esc(clients.find(x=>x.id===d.client).note)}</p>` : ''}<p>Un seul bouton crée le fichier e-mail avec le PDF déjà joint. Ouvrez-le dans Outlook, puis transférez-le au destinataire indiqué.</p><form id="send-form"><label class="field">Destinataire<input name="recipient" type="email" required value="${esc(c.email)}"></label><label class="field">Objet<input name="subject" required value="${esc((d.type === 'facture' ? 'Facture ' : 'Devis ') + d.id)}"></label><label class="field">Message<textarea name="body" rows="6">${esc(`Bonjour,\n\nVeuillez trouver en pièce jointe ${d.type === 'facture' ? 'la facture' : 'le devis'} ${d.id}, pour un montant de ${euro(totals(d).total)}.\n\nBien à vous,\n${d.issuer?.name || company.name}`)}</textarea></label><button class="primary">Ouvrir ma messagerie</button></form><div id="send-confirm" aria-live="polite"></div>`);
   $('#send-form').onsubmit = async e => {
     e.preventDefault(); if(featureBusy)return; featureBusy=true;
     const submit=e.target.querySelector('button');submit.disabled=true;submit.textContent='Génération du PDF…';
     const f = new FormData(e.target), recipient=String(f.get('recipient')).trim(), subject=String(f.get('subject')), body=String(f.get('body'));
     try {
-      const pdf=await documentPDF(d), filename=documentFilename(d)+'.pdf';
-      const eml=await emailDraftBlob(pdf,filename,recipient,subject,body);
-      const mailto=documentMailto(recipient,subject,body);
-      $('#send-confirm').innerHTML=`<p>Message prêt pour <strong>${esc(recipient)}</strong> · PDF : ${esc(filename)}</p><p><button class="primary" id="open-document-email" type="button">Ouvrir ma messagerie</button></p><p>Le destinataire, l’objet et le message seront préremplis dans votre messagerie par défaut. Pour Outlook, définissez-le comme application de messagerie par défaut.</p><p><strong>Ajoutez le PDF avant d’envoyer :</strong> téléchargez-le ci-dessous, puis joignez-le au message.</p><button id="download-document-pdf">Télécharger le PDF à joindre</button><details><summary>Préparer un fichier e-mail avec le PDF déjà joint</summary><p><button id="download-email">Télécharger l’e-mail avec le PDF joint (.eml)</button></p><p>Ce fichier contient le destinataire, l’objet, le message et le PDF. Ouvrez-le dans une messagerie compatible. Selon votre logiciel, utilisez « Modifier comme nouveau message » avant l’envoi.</p></details><p>Après l’envoi effectif dans votre messagerie :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
-      $('#open-document-email').onclick=()=>{window.location.href=mailto;};
-      $('#download-email').onclick=()=>downloadAttachment(eml,documentFilename(d)+'.eml');
-      $('#download-document-pdf').onclick=()=>downloadAttachment(pdf,filename);
+      const eml=await prepareDocumentEmail(d,{recipient,subject,body});
+      const filename=documentFilename(d)+'.eml';
+      downloadAttachment(eml,filename);
+      $('#send-confirm').innerHTML=`<p>Ouvrez <strong>${esc(filename)}</strong> dans les téléchargements du navigateur. Dans Outlook, choisissez <strong>Transférer</strong>, renseignez <strong>${esc(recipient)}</strong> et envoyez le message. Le PDF est déjà joint.</p><p>Après l’envoi effectif dans Outlook :</p><button id="confirm-document-send">J’ai envoyé ce document</button>`;
       $('#confirm-document-send').onclick=()=>confirmDocumentSend(d,recipient);
     } catch(error) { featureError(error); }
-    finally {featureBusy=false;submit.disabled=false;submit.textContent='Préparer le message et le PDF';}
+    finally {featureBusy=false;submit.disabled=false;submit.textContent='Ouvrir ma messagerie';}
   };
 }
 async function confirmDocumentSend(d,recipient) {
