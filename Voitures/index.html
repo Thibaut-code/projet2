@@ -67,13 +67,13 @@
 <h2 class="search-title">Rechercher un véhicule</h2>
 <div class="search-form">
 <div class="sf-group">
-<label><i class="fas fa-tag"></i> Marque</label>
+<label for="filterMarque"><i class="fas fa-tag"></i> Marque</label>
 <select class="sf-input" id="filterMarque">
 <option value="">Toutes les marques</option>
 </select>
 </div>
 <div class="sf-group">
-<label><i class="fas fa-gas-pump"></i> Carburant</label>
+<label for="filterCarburant"><i class="fas fa-gas-pump"></i> Carburant</label>
 <select class="sf-input" id="filterCarburant">
 <option value="">Tous</option>
 <option>Essence</option>
@@ -84,7 +84,7 @@
 </select>
 </div>
 <div class="sf-group">
-<label><i class="fas fa-euro-sign"></i> Budget max</label>
+<label for="filterBudget"><i class="fas fa-euro-sign"></i> Budget max</label>
 <select class="sf-input" id="filterBudget">
 <option value="">Sans limite</option>
 <option value="5000">5 000 €</option>
@@ -96,7 +96,7 @@
 </select>
 </div>
 <div class="sf-group">
-<label><i class="fas fa-calendar"></i> Année min</label>
+<label for="filterAnnee"><i class="fas fa-calendar"></i> Année min</label>
 <select class="sf-input" id="filterAnnee">
 <option value="">Toutes</option>
 <option value="2022">2022</option>
@@ -135,8 +135,8 @@
 <div class="cars-error" id="carsError" style="display:none">
 <i class="fas fa-exclamation-triangle"></i>
 <h3>Impossible de charger le stock</h3>
-<p>Vérifiez que le Google Sheet est bien configuré et public.<br/>
-<a href="admin.html" target="_blank">Voir le guide de configuration →</a></p>
+<p><span id="stockErrorText">Le stock est temporairement indisponible.</span></p>
+<button type="button" class="cta-main" id="retryStock">Réessayer</button>
 </div>
 <!-- GRILLE VOITURES (remplie dynamiquement) -->
 <div class="cars-grid" id="carsGrid" style="display:none"></div>
@@ -148,6 +148,7 @@
 <button class="cta-main" onclick="resetFilters()">Réinitialiser les filtres</button>
 </div>
 <div class="stock-more" id="stockMore" style="display:none">
+<button type="button" class="cta-main" id="loadMoreCars" hidden>Afficher plus de voitures</button>
 <p>Vous ne trouvez pas votre bonheur ? Contactez-nous pour plus de choix.</p>
 <a class="cta-main" href="#contact">Nous contacter</a>
 </div>
@@ -401,6 +402,15 @@
 </div>
 </div>
 <button class="btt" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})"><i class="fas fa-chevron-up"></i></button>
+<dialog id="photoGallery" class="photo-gallery" aria-labelledby="galleryTitle">
+<div class="gallery-header"><h2 id="galleryTitle"></h2><button type="button" id="closeGallery" aria-label="Fermer la galerie">✕</button></div>
+<div class="gallery-stage"><button type="button" id="prevPhoto" aria-label="Photo précédente">❮</button><img id="galleryImage" alt="" width="1600" height="1067"/><button type="button" id="nextPhoto" aria-label="Photo suivante">❯</button></div>
+<p id="galleryCounter" aria-live="polite"></p><div id="galleryThumbs" class="gallery-thumbs"></div>
+</dialog>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2/dist/umd/supabase.js"></script>
+<script src="supabase-config.js"></script>
+<script src="data.js"></script>
 <script src="script.js"></script>
+<script src="gallery.js"></script>
 </body>
 </html>

@@ -1,131 +1,63 @@
-/* ============================================
-   AUTOPRIME – JAVASCRIPT + GOOGLE SHEETS
-   ============================================ */
-
-/* ============================================
-   ⚙️ CONFIGURATION – À MODIFIER PAR LE CLIENT
-   Remplacer l'ID ci-dessous par celui du vrai Google Sheet
-   ============================================ */
-const SHEET_ID = 'VOTRE_SHEET_ID_ICI';
-const SHEET_NAME = 'Voitures'; // Nom de l'onglet dans le Google Sheet
-
-// URL de l'API Google Sheets (lecture publique)
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
-
-/* ============================================
-   DONNÉES DE DÉMONSTRATION
-   Utilisées si le Google Sheet n'est pas encore configuré
-   ============================================ */
-const DEMO_VOITURES = [
-    {
-        marque: 'BMW', modele: 'Série 5 530d xDrive', annee: '2021',
-        km: '48 000', carburant: 'Diesel', boite: 'Automatique',
-        prix: '34 900', categorie: 'Berline', badge: 'Nouveau',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=600&q=80'
-    },
-    {
-        marque: 'Audi', modele: 'Q5 40 TDI Quattro', annee: '2022',
-        km: '32 000', carburant: 'Diesel', boite: 'Automatique',
-        prix: '38 500', categorie: 'SUV', badge: 'Promo',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=600&q=80'
-    },
-    {
-        marque: 'Peugeot', modele: '208 GT Line 1.2 PureTech', annee: '2020',
-        km: '41 000', carburant: 'Essence', boite: 'Manuelle',
-        prix: '14 900', categorie: 'Citadine', badge: '',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1541899481282-d53bffe3c35d?w=600&q=80'
-    },
-    {
-        marque: 'Toyota', modele: 'RAV4 Hybrid AWD-i', annee: '2021',
-        km: '55 000', carburant: 'Hybride', boite: 'Automatique',
-        prix: '29 900', categorie: 'SUV', badge: 'Hybride',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=600&q=80'
-    },
-    {
-        marque: 'Mercedes-Benz', modele: 'Classe C 220d AMG Line', annee: '2023',
-        km: '18 000', carburant: 'Diesel', boite: 'Automatique',
-        prix: '42 000', categorie: 'Premium', badge: 'Nouveau',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=600&q=80'
-    },
-    {
-        marque: 'Renault', modele: 'Clio V Intens TCe 100', annee: '2020',
-        km: '38 000', carburant: 'Essence', boite: 'Manuelle',
-        prix: '13 500', categorie: 'Citadine', badge: '',
-        dispo: 'Oui',
-        photo: 'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=600&q=80'
-    }
-];
-
-/* ============================================
-   ÉTAT GLOBAL
-   ============================================ */
+/* AUTOPRIME – CATALOGUE SUPABASE */
 let allVoitures = [];
-let filteredVoitures = [];
 let activeCategory = 'all';
+let stockPage = 0;
+let stockCount = 0;
+let stockLoading = false;
+let stockRequest = 0;
+const PAGE_SIZE = 12;
 
-/* ============================================
-   CHARGEMENT DES VOITURES
-   ============================================ */
-async function loadVoitures() {
+async function loadVoitures(append = false) {
+    const request = ++stockRequest;
     const loading = document.getElementById('carsLoading');
     const error = document.getElementById('carsError');
     const grid = document.getElementById('carsGrid');
     const empty = document.getElementById('carsEmpty');
     const more = document.getElementById('stockMore');
-
-    // Afficher le spinner
-    loading.style.display = 'block';
+    const next = document.getElementById('loadMoreCars');
+    stockLoading = true;
+    next.disabled = true;
     error.style.display = 'none';
-    grid.style.display = 'none';
-    empty.style.display = 'none';
-    more.style.display = 'none';
-
-    // Si le Sheet ID n'est pas configuré → utiliser les données de démo
-    if (SHEET_ID === 'VOTRE_SHEET_ID_ICI') {
-        console.info('ℹ️ Mode démo : configurez votre Google Sheet ID dans script.js');
-        setTimeout(() => {
-            allVoitures = DEMO_VOITURES;
-            filteredVoitures = [...allVoitures];
-            loading.style.display = 'none';
-            renderVoitures(filteredVoitures);
-            populateMarqueFilter();
-        }, 800); // Simuler un délai de chargement
-        return;
+    if (!append) {
+        stockPage = 0;
+        allVoitures = [];
+        loading.style.display = 'block';
+        grid.style.display = 'none';
+        empty.style.display = 'none';
+        more.style.display = 'none';
     }
-
-    // Charger depuis Google Sheets
+    const page = append ? stockPage + 1 : 0;
     try {
-        const response = await fetch(SHEET_URL);
-        if (!response.ok) throw new Error('Erreur réseau');
-
-        const text = await response.text();
-        // Google renvoie du JSON enveloppé dans une fonction JS
-        const json = JSON.parse(text.substring(47).slice(0, -2));
-        const rows = json.table.rows;
-        const cols = json.table.cols.map(c => c.label.toLowerCase().trim());
-
-        allVoitures = rows.map(row => {
-            const obj = {};
-            cols.forEach((col, i) => {
-                obj[col] = row.c[i]?.v?.toString().trim() || '';
-            });
-            return obj;
-        }).filter(v => v.marque && v.modele); // Ignorer les lignes vides
-
-        filteredVoitures = [...allVoitures];
-        loading.style.display = 'none';
-        renderVoitures(filteredVoitures);
-        populateMarqueFilter();
-
+        const db = VehicleData.getClient();
+        let query = db.from('voitures').select('*', { count: 'exact' });
+        const marque = document.getElementById('filterMarque').value;
+        const carburant = document.getElementById('filterCarburant').value;
+        const budget = document.getElementById('filterBudget').value;
+        const annee = document.getElementById('filterAnnee').value;
+        if (marque) query = query.eq('marque', marque);
+        if (carburant) query = query.eq('carburant', carburant);
+        if (budget) query = query.lte('prix', Number(budget));
+        if (annee) query = query.gte('annee', Number(annee));
+        if (activeCategory !== 'all') query = query.eq('categorie', activeCategory);
+        const result = await query.order('created_at', { ascending: false }).order('id')
+            .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+        if (result.error) throw result.error;
+        if (request !== stockRequest) return;
+        stockCount = result.count;
+        stockPage = page;
+        allVoitures = append ? [...allVoitures, ...result.data] : result.data;
+        renderVoitures(allVoitures);
     } catch (err) {
-        console.error('Erreur chargement Google Sheets:', err);
-        loading.style.display = 'none';
+        if (request !== stockRequest) return;
+        console.error('Erreur chargement du stock:', err);
         error.style.display = 'block';
+        document.getElementById('stockErrorText').textContent = 'Le stock est temporairement indisponible. Réessayez dans un instant.';
+    } finally {
+        if (request === stockRequest) {
+            loading.style.display = 'none';
+            stockLoading = false;
+            next.disabled = false;
+        }
     }
 }
 
@@ -148,6 +80,7 @@ function renderVoitures(voitures) {
     grid.style.display = 'grid';
     empty.style.display = 'none';
     more.style.display = 'block';
+    document.getElementById('loadMoreCars').hidden = voitures.length >= stockCount;
 
     // Animer les cartes
     grid.querySelectorAll('.car-card').forEach((card, i) => {
@@ -177,24 +110,26 @@ function renderVoitures(voitures) {
 }
 
 function createCarCard(v) {
+    const esc = VehicleData.escapeHtml;
+    v = { ...v, marque: esc(v.marque), modele: esc(v.modele), categorie: esc(v.categorie), badge: esc(v.badge), carburant: esc(v.carburant), boite: esc(v.boite) };
     const badgeColors = {
         'Nouveau': 'new', 'Promo': 'promo', 'Hybride': 'eco',
         'Électrique': 'eco', 'Vendu': 'promo'
     };
     const badgeClass = badgeColors[v.badge] || 'new';
     const badgeHtml = v.badge ? `<div class="car-badge ${badgeClass}">${v.badge}</div>` : '';
-    const photoUrl = v.photo || `https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80`;
-    const prix = v.prix ? parseInt(v.prix.toString().replace(/\D/g, '')).toLocaleString('fr-FR') + ' €' : 'Prix sur demande';
-    const km = v.km ? parseInt(v.km.toString().replace(/\D/g, '')).toLocaleString('fr-FR') + ' km' : '–';
-    const dispo = (v.dispo || 'Oui').toLowerCase() !== 'non' && (v.dispo || 'Oui').toLowerCase() !== 'vendu';
+    const photoUrl = v.photos?.[0] ? esc(VehicleData.imageUrl(v.photos[0].thumb)) : 'placeholder.svg';
+    const prix = Number(v.prix).toLocaleString('fr-FR') + ' €';
+    const km = Number(v.km).toLocaleString('fr-FR') + ' km';
+    const dispo = v.dispo !== false;
 
     return `
     <div class="car-card" data-cat="${v.categorie || ''}">
         <div class="car-img-wrap">
-            <img src="${photoUrl}" alt="${v.marque} ${v.modele}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=600&q=80'">
+            <img width="600" height="400" src="${photoUrl}" alt="${v.marque} ${v.modele}" loading="lazy" onerror="this.onerror=null;this.src='placeholder.svg'">
             ${badgeHtml}
             <div class="car-fav"><i class="far fa-heart"></i></div>
-            <div class="car-overlay"><a href="#contact" class="car-overlay-btn">Voir détails</a></div>
+            <div class="car-overlay"><button type="button" class="car-overlay-btn" data-gallery="${esc(v.id)}">Voir les photos (${v.photos?.length || 0})</button></div>
         </div>
         <div class="car-info">
             <div class="car-top">
@@ -223,48 +158,27 @@ function createCarCard(v) {
 /* ============================================
    FILTRES
    ============================================ */
-function populateMarqueFilter() {
-    const select = document.getElementById('filterMarque');
-    const marques = [...new Set(allVoitures.map(v => v.marque))].sort();
-    marques.forEach(m => {
-        const opt = document.createElement('option');
-        opt.value = m;
-        opt.textContent = m;
-        select.appendChild(opt);
-    });
+async function populateMarqueFilter() {
+    try {
+        const { data, error } = await VehicleData.getClient().rpc('vehicle_brands');
+        if (error) throw error;
+        const select = document.getElementById('filterMarque');
+        for (const row of data) {
+            const opt = document.createElement('option');
+            opt.value = row.marque;
+            opt.textContent = row.marque;
+            select.appendChild(opt);
+        }
+    } catch (err) { console.error('Erreur chargement des marques:', err); }
 }
-
-function applyFilters() {
-    const marque = document.getElementById('filterMarque').value;
-    const carburant = document.getElementById('filterCarburant').value;
-    const budget = parseInt(document.getElementById('filterBudget').value) || Infinity;
-    const anneeMin = parseInt(document.getElementById('filterAnnee').value) || 0;
-
-    filteredVoitures = allVoitures.filter(v => {
-        const prixNum = parseInt((v.prix || '0').toString().replace(/\D/g, '')) || 0;
-        const anneeNum = parseInt(v.annee) || 0;
-        const catMatch = activeCategory === 'all' || (v.categorie || '').toLowerCase() === activeCategory.toLowerCase();
-        return (
-            (!marque || v.marque === marque) &&
-            (!carburant || v.carburant === carburant) &&
-            (prixNum <= budget) &&
-            (anneeNum >= anneeMin) &&
-            catMatch
-        );
-    });
-
-    renderVoitures(filteredVoitures);
-}
-
+function applyFilters() { loadVoitures(); }
 function resetFilters() {
-    document.getElementById('filterMarque').value = '';
-    document.getElementById('filterCarburant').value = '';
-    document.getElementById('filterBudget').value = '';
-    document.getElementById('filterAnnee').value = '';
+    for (const id of ['filterMarque', 'filterCarburant', 'filterBudget', 'filterAnnee']) {
+        document.getElementById(id).value = '';
+    }
     activeCategory = 'all';
     document.querySelectorAll('.sf-tag').forEach(b => b.classList.toggle('active', b.dataset.f === 'all'));
-    filteredVoitures = [...allVoitures];
-    renderVoitures(filteredVoitures);
+    loadVoitures();
 }
 
 /* ============================================
@@ -274,6 +188,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Charger les voitures
     loadVoitures();
+    populateMarqueFilter();
+    document.getElementById('loadMoreCars').addEventListener('click', () => {
+        if (!stockLoading) loadVoitures(true);
+    });
+    document.getElementById('retryStock').addEventListener('click', () => loadVoitures());
+    document.getElementById('carsGrid').addEventListener('click', e => {
+        const button = e.target.closest('[data-gallery]');
+        if (button) openGallery(button.dataset.gallery);
+    });
 
     /* ---- NAV SCROLL ---- */
     const nav = document.getElementById('nav');
@@ -364,7 +287,9 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---- SMOOTH SCROLL ---- */
     document.querySelectorAll('a[href^="#"]').forEach(a => {
         a.addEventListener('click', function(e) {
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = this.getAttribute('href');
+            if (href === '#') { e.preventDefault(); return; }
+            const target = document.querySelector(href);
             if (target) {
                 e.preventDefault();
                 window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' });
