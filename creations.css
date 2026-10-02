@@ -16,8 +16,8 @@
 .browser-dots i:first-child { background:var(--project-accent); }
 .preview-label { font-size:12px; letter-spacing:1px; color:#afa79d; }
 .preview-window { position:relative; aspect-ratio:1.65; overflow:hidden; }
-.preview-window-dashboard { aspect-ratio:2475 / 1202; }
-.preview-window-dashboard img { display:block; width:100%; height:100%; object-fit:contain; }
+.preview-window-dashboard { aspect-ratio:1.65; }
+.preview-window-dashboard img { display:block; width:100%; height:100%; object-fit:cover; object-position:top; }
 .preview-window iframe { position:absolute; inset:0 auto auto 0; display:block; width:1280px; max-width:none; height:800px; border:0; transform:scale(var(--preview-scale,.42)); transform-origin:0 0; pointer-events:none; background:#fff; }
 .preview-window:after { content:''; position:absolute; inset:0; background:linear-gradient(0deg,#070b0d70,transparent 48%); transition:background .3s; }
 .preview-open { position:absolute; z-index:1; bottom:20px; left:50%; transform:translate(-50%,8px); background:#0e1415ee; color:white; border:1px solid #ffffff55; padding:10px 20px; border-radius:50px; font-size:14px; white-space:nowrap; opacity:0; transition:opacity .3s,transform .3s; }
