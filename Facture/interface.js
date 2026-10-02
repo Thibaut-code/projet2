@@ -3,13 +3,14 @@ const UI_THEMES = {
   bleu: { label: 'Bleu et blanc', font: 'Inter', layout: 'sidebar', icon: 'line', colors: ['#f5f8ff','#ffffff','#142449','#1260ff','#ffffff','#142449'] },
   violet: { label: 'Sombre et violet', font: 'Space Grotesk', layout: 'top', icon: 'line', colors: ['#10141d','#1a202c','#f1f3fa','#b18aff','#141923','#f1f3fa'] },
   corail: { label: 'Corail et prune', font: 'Nunito Sans', layout: 'rail', icon: 'solid', colors: ['#fff8fa','#ffffff','#321743','#e13747','#321743','#ffffff'] },
-  citron: { label: 'Graphite et citron', font: 'Barlow Condensed', layout: 'minimal', icon: 'square', colors: ['#ffffff','#ffffff','#161616','#d8ee00','#161616','#ffffff'] },
+  citron: { label: 'Graphite et vert terminal', font: 'IBM Plex Mono', layout: 'minimal', icon: 'square', colors: ['#101814','#17221b','#d7f8df','#66ff88','#0b120e','#d7f8df'] },
   turquoise: { label: 'Bleu pétrole et turquoise', font: 'Source Sans 3', layout: 'top-left', icon: 'line', colors: ['#f1f7fa','#ffffff','#103a4e','#008ca5','#103a4e','#ffffff'] },
   peche: { label: 'Indigo et pêche', font: 'Nunito Sans', layout: 'bento', icon: 'solid', colors: ['#fcfaff','#ffffff','#26205c','#e87952','#ffffff','#26205c'] },
   orange: { label: 'Noir et orange', font: 'IBM Plex Sans', layout: 'compact', icon: 'square', colors: ['#101518','#192024','#f4f6f8','#ff8617','#0c1114','#f4f6f8'] },
   bordeaux: { label: 'Blanc et bordeaux', font: 'Source Sans 3', heading: 'Georgia', layout: 'top-right', icon: 'line', colors: ['#faf9fb','#ffffff','#26212a','#831a3c','#ffffff','#26212a'] },
   cyan: { label: 'Ardoise et cyan', font: 'Manrope', layout: 'analytics', icon: 'solid', colors: ['#f1f7fd','#ffffff','#192d4b','#007fcb','#192d4b','#ffffff'] },
-  sable: { label: 'Sable et chocolat', font: 'DM Sans', layout: 'warm', icon: 'soft', colors: ['#f7f2eb','#fffdfa','#35271e','#986325','#35271e','#ffffff'] }
+  sable: { label: 'Sable et chocolat', font: 'DM Sans', layout: 'warm', icon: 'soft', colors: ['#f7f2eb','#fffdfa','#35271e','#986325','#35271e','#ffffff'] },
+  classique: { label: 'Original · Vert et terracotta', font: 'DM Sans', heading: '"Fraunces", Georgia, serif', layout: 'classic', icon: 'line', colors: ['#fffdfa','#fffdfa','#123b2f','#bd5537','#12382d','#fffdfa'] }
 };
 let uiChoice = 'bleu';
 let uiColumnReady = false;
@@ -37,12 +38,12 @@ function applyInterface(key) {
   root.style.setProperty('--ui-font', `"${t.font}", Arial, sans-serif`);
   root.style.setProperty('--ui-heading', t.heading || `"${t.font}", Arial, sans-serif`);
   root.style.setProperty('--ui-action-ink', ['citron','violet','orange'].includes(uiChoice) ? '#151515' : '#ffffff');
-  const marks={bleu:'<path d="M8 24 20 8l12 10-12 16z"/><path d="m22 14 18 12-14 16-10-10z" opacity=".6"/>',violet:'<path d="M8 5h30v10H19v9h15v9H19v10H8z"/>',corail:'<circle cx="14" cy="14" r="9"/><circle cx="34" cy="14" r="9"/><circle cx="14" cy="34" r="9"/><circle cx="34" cy="34" r="9" opacity=".6"/>',citron:'<path d="M18 4h13L14 26H2zM32 18h13L28 40H15z"/>',turquoise:'<path d="M2 23Q13 4 26 16T46 14Q36 35 23 25T2 23ZM2 35Q13 18 26 29T46 26Q36 47 23 37T2 35Z"/>',peche:'<path d="M5 36V18a15 15 0 0 1 30 0L19 36z"/><rect x="19" y="23" width="23" height="22" rx="6" opacity=".5"/>',orange:'<path d="M6 16 40 2v12L6 28zM6 33l25-11v12L6 45z"/>',bordeaux:'<path d="M4 5h39Q39 20 25 20H4zM4 25h26Q27 38 15 38H4zM4 39h11v8H4z"/>',cyan:'<path d="m24 2 20 11v23L24 47 4 36V13l10 6v11l10 6 10-6V19l-10-6-10 6-10-6z"/>',sable:'<path d="M6 43V17Q6 4 18 4h5v12h-5v27zM25 43V28q0-12 13-12h6v12h-7v15z"/>'};
+  const marks={bleu:'<path d="M8 24 20 8l12 10-12 16z"/><path d="m22 14 18 12-14 16-10-10z" opacity=".6"/>',violet:'<path d="M8 5h30v10H19v9h15v9H19v10H8z"/>',corail:'<circle cx="14" cy="14" r="9"/><circle cx="34" cy="14" r="9"/><circle cx="14" cy="34" r="9"/><circle cx="34" cy="34" r="9" opacity=".6"/>',citron:'<path d="M18 4h13L14 26H2zM32 18h13L28 40H15z"/>',turquoise:'<path d="M2 23Q13 4 26 16T46 14Q36 35 23 25T2 23ZM2 35Q13 18 26 29T46 26Q36 47 23 37T2 35Z"/>',peche:'<path d="M5 36V18a15 15 0 0 1 30 0L19 36z"/><rect x="19" y="23" width="23" height="22" rx="6" opacity=".5"/>',orange:'<path d="M6 16 40 2v12L6 28zM6 33l25-11v12L6 45z"/>',bordeaux:'<path d="M4 5h39Q39 20 25 20H4zM4 25h26Q27 38 15 38H4zM4 39h11v8H4z"/>',cyan:'<path d="m24 2 20 11v23L24 47 4 36V13l10 6v11l10 6 10-6V19l-10-6-10 6-10-6z"/>',classique:'<path d="M4 22 24 4l20 18v22H4zM14 44V25h12v19M26 18h8v12h-8" fill="none" stroke="currentColor" stroke-width="2"/>',sable:'<path d="M6 43V17Q6 4 18 4h5v12h-5v27zM25 43V28q0-12 13-12h6v12h-7v15z"/>'};
   const mark=document.querySelector('.brand-symbol');if(mark)mark.innerHTML=`<svg viewBox="0 0 48 48" fill="currentColor" aria-hidden="true">${marks[uiChoice]}</svg>`;
   const fontLink = document.getElementById('interface-font');
   if (fontLink) fontLink.href = `https://fonts.googleapis.com/css2?family=${t.font.replaceAll(' ','+')}:wght@400;500;600;700&display=swap`;
   $('#themelabel').textContent = t.label;
-  $('#brandtagline').textContent = 'Votre facturation, simplement';
+  $('#brandtagline').textContent = uiChoice === 'classique' ? 'Des factures qui coulent de source' : 'Votre facturation, simplement';
   $('#sidefoottrades').textContent = 'Clients · Documents · Paiements';
   document.querySelectorAll('[data-nav]').forEach(a => { const span = a.querySelector('.nav-icon'); if(span) span.innerHTML = uiIcon(a.dataset.nav); });
   document.querySelectorAll('.theme-option').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.theme === uiChoice)));
@@ -82,6 +83,7 @@ async function chooseProfession(key) {
   toast(`Métier « ${PROFESSIONS[key].label} » sélectionné.`);
 }
 function interfaceHome() {
+  if (uiChoice === 'classique') return classicHome();
   const invoices = docs.filter(d=>d.type==='facture'), unpaid=invoices.filter(d=>!d.paid), paid=invoices.filter(d=>d.paid), quotes=docs.filter(d=>d.type==='devis');
   const metric=(title,list,icon,route,cls)=>`<button class="ui-metric ${cls}" onclick="${route}">${uiIcon(icon)}<span>${title}<strong>${euro(list.reduce((sum,d)=>sum+totals(d).total,0))}</strong><small>${list.length} ${title==='Devis en attente'?'devis':'facture(s)'}</small></span></button>`;
   const actions=`<section class="ui-actions"><h2>Actions rapides</h2><button class="primary" onclick="start('facture')">${uiIcon('plus')} Nouvelle facture</button><button onclick="start('devis')">${uiIcon('docs')} Nouveau devis</button></section>`;
@@ -91,7 +93,54 @@ function interfaceHome() {
   const curve=`<div class="ui-curve"><svg viewBox="0 0 500 170" role="img" aria-label="Montants facturés hors TVA sur six mois"><path d="M20 25H480M20 85H480M20 145H480" stroke="currentColor" opacity=".1"/><polygon points="20,145 ${points} 480,145" fill="currentColor" opacity=".14"/><polyline points="${points}" fill="none" stroke="currentColor" stroke-width="3"/>${amounts.map((a,i)=>`<circle cx="${20+i*92}" cy="${145-a/max*120}" r="4" fill="currentColor"><title>${months[i].label} : ${euro(a)}</title></circle>`).join('')}</svg><div>${months.map(m=>`<small>${m.label}</small>`).join('')}</div></div>`;
   const activity=`<section class="ui-activity"><div class="section-head"><h2>${uiChoice==='violet'?'Encaissements et activité':'Évolution du chiffre d’affaires'}</h2><a class="link" href="#dashboard">Rapports →</a></div>${uiChoice==='violet'?`<strong class="activity-amount">${euro(unpaid.reduce((s,d)=>s+totals(d).total,0))}</strong>`:''}<p class="muted">Montants facturés hors TVA · six derniers mois</p>${['violet','turquoise','sable'].includes(uiChoice)?curve:`<div class="ui-chart">${months.map((m,i)=>`<div><span>${euro(amounts[i])}</span><i style="height:${Math.max(2,amounts[i]/max*100)}px" aria-hidden="true"></i><small>${m.label}</small></div>`).join('')}</div>`}</section>`;
   const late=unpaid.filter(d=>d.due && d.due<today());
-  const follow=uiChoice==='bleu'?`<section class="ui-follow"><h2>Derniers paiements</h2>${paid.slice(0,4).map(d=>`<a href="#view/${esc(d.id)}">${uiIcon('check')}<span>${esc(client(d).name)}<small>${esc(d.id)}</small><strong>${euro(totals(d).total)}</strong></span></a>`).join('')||'<p class="muted">Aucun paiement enregistré.</p>'}</section>`:`<section class="ui-follow"><h2>À suivre</h2><a href="#payments">${uiIcon('clock')}<span>Factures en retard<strong>${late.length} · ${euro(late.reduce((s,d)=>s+totals(d).total,0))}</strong></span></a><a href="#docs" onclick="filter='devis'">${uiIcon('docs')}<span>Devis enregistrés<strong>${quotes.length}</strong></span></a><a href="#recurring">${uiIcon('recurring')}<span>Abonnements<strong>${invoices.filter(d=>d.recurrence).length}</strong></span></a></section>`;
+  const follow=uiChoice==='bleu'?`<section class="ui-follow"><h2>Derniers paiements</h2>${paid.slice(0,4).map(d=>`<a href="#view/${esc(d.id)}">${uiIcon('check')}<span>${esc(client(d).name)}<small>${esc(d.id)}</small><strong>${euro(totals(d).total)}</strong></span></a>`).join('')||'<p class="muted">Aucun paiement enregistré.</p>'}</section>`:`<section class="ui-follow"><h2>À suivre</h2><a href="#payments">${uiIcon('clock')}<span>Factures en retard<strong>${late.length} · ${euro(late.reduce((s,d)=>s+totals(d).total,0))}</strong></span></a><a href="#docs" onclick="event.preventDefault();openDocuments('devis')">${uiIcon('docs')}<span>Devis enregistrés<strong>${quotes.length}</strong></span></a><a href="#recurring">${uiIcon('recurring')}<span>Abonnements<strong>${invoices.filter(d=>d.recurrence).length}</strong></span></a></section>`;
   const title=uiChoice==='bleu'?'Vue d’ensemble':uiChoice==='corail'?'Votre activité en un coup d’œil':uiChoice==='citron'?'Bienvenue sur Facture Facile':uiChoice==='bordeaux'?'Accueil':`Bonjour${company.name?.trim()?' '+esc(company.name.trim()):''} !`;
-  return `<div class="interface-home"><section class="ui-greeting"><div><p class="eyebrow">Votre espace de travail</p><h1>${title}</h1><p class="muted">Créez, suivez et gérez vos factures et devis.</p></div></section>${draft?'<div class="notice ui-draft">Un document est en cours. <a href="#wizard">Reprendre mon brouillon →</a></div>':''}${actions}<section class="ui-metrics">${metric('À encaisser',unpaid,'clock',"go('payments')",'unpaid')}${metric('Factures payées',paid,'check',"go('payments')",'paid')}${metric('Devis en attente',quotes,'docs',"filter='devis';go('docs')",'quotes')}</section>${activity}<section class="recent-panel ui-invoices" data-search-scope><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="filter='facture'">Voir toutes les factures →</a></div>${searchField()}${homeTable(invoices.slice(0,8))}</section>${follow}</div>`;
+  return `<div class="interface-home"><section class="ui-greeting"><div><p class="eyebrow">Votre espace de travail</p><h1>${title}</h1><p class="muted">Créez, suivez et gérez vos factures et devis.</p></div></section>${draft?'<div class="notice ui-draft">Un document est en cours. <a href="#wizard">Reprendre mon brouillon →</a></div>':''}${actions}<section class="ui-metrics">${metric('À encaisser',unpaid,'clock',"go('payments')",'unpaid')}${metric('Factures payées',paid,'check',"go('payments')",'paid')}${metric('Devis en attente',quotes,'docs',"openDocuments('devis')",'quotes')}</section>${activity}<section class="recent-panel ui-invoices" data-search-scope><div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="event.preventDefault();openDocuments('facture')">Voir toutes les factures →</a></div>${searchField()}${homeTable(invoices.slice(0,8))}</section>${follow}</div>`;
+}
+
+function classicHome() {
+  const unpaid = docs.filter((d) => d.type === "facture" && !d.paid);
+  const paid = docs.filter((d) => d.type === "facture" && d.paid);
+  const quotes = docs.filter((d) => d.type === "devis");
+  const name = company.name?.trim();
+  return `
+        <section class="home-hero">
+            <div class="hero-copy">
+                <h1>Bonjour${name ? " " + esc(name) : ""},</h1>
+                <p>Prêt pour une nouvelle journée ?</p>
+                <span class="hero-underline" aria-hidden="true"></span>
+            </div>
+            <div class="hero-art" aria-hidden="true">
+                <img src="radiateur.png" alt="">
+            </div>
+        </section>
+        <div class="actions">
+            <button class="action-card main" onclick="start('facture')"><span class="action-icon" aria-hidden="true">▤</span>
+                <span><strong>Créer une facture</strong></span><span class="arrow" aria-hidden="true">→</span></button>
+            <button class="action-card" onclick="start('devis')"><span class="action-icon" aria-hidden="true">▤</span>
+                <span><strong>Créer un devis</strong></span><span class="arrow" aria-hidden="true">→</span></button>
+        </div>
+        ${draft ? '<div class="notice">Vous avez un document en cours. <button class="link" onclick="go(\'wizard\')">Reprendre mon brouillon</button></div>' : ""}
+        <div class="stats">
+            <button class="stat stat-unpaid" onclick="go('payments')">
+                <span class="stat-icon" aria-hidden="true">▢</span>
+                <span class="stat-content"><span>À encaisser</span><strong>${euro(unpaid.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${unpaid.length} facture(s) en attente</small></span>
+                <span class="stat-arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="stat stat-paid" onclick="go('payments')">
+                <span class="stat-icon" aria-hidden="true">✓</span>
+                <span class="stat-content"><span>Factures payées</span><strong>${euro(paid.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${paid.length} facture(s) encaissée(s)</small></span>
+                <span class="stat-arrow" aria-hidden="true">›</span>
+            </button>
+            <button class="stat stat-quotes" onclick="openDocuments('devis')">
+                <span class="stat-icon" aria-hidden="true">▤</span>
+                <span class="stat-content"><span>Devis en attente</span><strong>${euro(quotes.reduce((sum, d) => sum + totals(d).total, 0))}</strong><small>${quotes.length} devis en attente</small></span>
+                <span class="stat-arrow" aria-hidden="true">›</span>
+            </button>
+        </div>
+        <section class="recent-panel">
+            <div class="section-head"><h2>Dernières factures</h2><a class="link" href="#docs" onclick="event.preventDefault();openDocuments('facture')">Voir toutes les factures →</a></div>
+            ${homeTable(docs.filter((d) => d.type === "facture").slice(0, 5))}
+        </section>
+        <div class="bottom-note"><b>ⓘ</b><span>Vos documents sont enregistrés dans votre compte. Vérifiez les mentions et les taux de TVA avant une utilisation professionnelle.</span></div>`;
 }

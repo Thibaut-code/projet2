@@ -20,10 +20,10 @@
       href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..800,0..100,0..1&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="style.css?v=2026.10.02.1" />
+    <link rel="stylesheet" href="style.css?v=2026.10.02.2" />
     <link id="interface-font" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
-    <link rel="stylesheet" href="interface.css?v=2026.10.02.1" />
-    <link rel="stylesheet" href="refinement.css?v=2026.10.02.1" />
+    <link rel="stylesheet" href="interface.css?v=2026.10.02.2" />
+    <link rel="stylesheet" href="refinement.css?v=2026.10.02.2" />
   </head>
   <body>
     <a href="accueil.html" class="no-print" style="display:block;text-align:center;padding:6px">Découvrir Facture Facile</a>
@@ -49,8 +49,7 @@
             data-nav="docs"
             data-filter="facture"
             onclick="
-              filter = 'facture';
-              render();
+              event.preventDefault(); openDocuments('facture');
             "
             ><span class="nav-icon" aria-hidden="true">▤</span
             ><span>Factures</span></a
@@ -60,8 +59,7 @@
             data-nav="docs"
             data-filter="devis"
             onclick="
-              filter = 'devis';
-              render();
+              event.preventDefault(); openDocuments('devis');
             "
             ><span class="nav-icon" aria-hidden="true">▤</span
             ><span>Devis</span></a
@@ -96,7 +94,7 @@
             >Clients · Documents · Paiements</span
           >
         </div>
-        <div class="app-version no-print">Version 2026.10.02.1</div>
+        <div class="app-version no-print">Version 2026.10.02.2</div>
       </aside>
       <div class="workspace">
         <header>
@@ -117,7 +115,7 @@
             <button class="quiet" id="logout" hidden>Déconnexion</button>
           </div>
         </header>
-        <main id="main" tabindex="-1"><h1>Facture Facile : devis et factures pour indépendants</h1><p>Créez vos devis et factures, gérez vos clients et suivez vos paiements. Dix apparences et cinq modèles personnalisables.</p><noscript>Activez JavaScript pour vous connecter à votre espace de facturation.</noscript></main>
+        <main id="main" tabindex="-1"><h1>Facture Facile : devis et factures pour indépendants</h1><p>Créez vos devis et factures, gérez vos clients et suivez vos paiements. Onze apparences et cinq modèles personnalisables.</p><noscript>Activez JavaScript pour vous connecter à votre espace de facturation.</noscript></main>
       </div>
     </div>
     <div id="toast" role="status"></div>
@@ -139,7 +137,7 @@
     </dialog>
     <dialog id="themedialog" aria-labelledby="themeheading">
       <h2 id="themeheading">Choisissez votre apparence</h2>
-      <p>Dix interfaces au choix. Votre métier et vos documents restent indépendants de ce choix.</p>
+      <p>Onze interfaces au choix. Votre métier et vos documents restent indépendants de ce choix.</p>
       <div class="theme-options"></div>
       <button type="button" onclick="this.closest('dialog').close()">
         Fermer
@@ -150,9 +148,9 @@
     <script src="vendor/qrcode.js"></script>
     <script src="vendor/qrcode_UTF8.js"></script>
     <script src="vendor/html2pdf.bundle.min.js"></script>
-    <script src="vat.js?v=2026.10.02.1"></script>
-    <script src="team.js?v=2026.10.02.1"></script>
-    <script src="interface.js?v=2026.10.02.1"></script>
-    <script src="app.js?v=2026.10.02.1"></script>
+    <script src="vat.js?v=2026.10.02.2"></script>
+    <script src="team.js?v=2026.10.02.2"></script>
+    <script src="interface.js?v=2026.10.02.2"></script>
+    <script src="app.js?v=2026.10.02.2"></script>
   </body>
 </html>

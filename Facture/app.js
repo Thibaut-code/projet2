@@ -200,11 +200,7 @@ function originalHome() { return interfaceHome(); }
 
 function start(type) {
   if (draft) {
-    go("wizard");
-    toast(
-      "Votre brouillon est toujours là. Terminez-le ou utilisez « Abandonner ce brouillon ».",
-    );
-    return;
+    return resolveCurrentDraft(() => start(type), type === 'devis' ? 'un nouveau devis' : 'une nouvelle facture');
   }
   draft = {
     appearance: structuredClone(company.appearance || DEFAULT_APPEARANCE),
@@ -217,6 +213,27 @@ function start(type) {
   };
   step = 1;
   go("wizard");
+}
+function resolveCurrentDraft(proceed, destination) {
+  document.getElementById('draft-dialog')?.remove();
+  const invoice = draft.type === 'facture';
+  const dialog = document.createElement('dialog');
+  dialog.id = 'draft-dialog';
+  dialog.setAttribute('aria-labelledby', 'draft-dialog-title');
+  dialog.innerHTML = `<h2 id="draft-dialog-title">${invoice ? 'Une facture est en cours' : 'Un devis est en cours'}</h2><p>Vous avez un brouillon non enregistré. Voulez-vous le continuer ou l’abandonner pour aller vers ${destination} ?</p><div class="filter-row"><button type="button" class="primary" data-continue>Continuer ${invoice ? 'la facture' : 'le devis'}</button><button type="button" data-discard>Abandonner et poursuivre</button><button type="button" data-cancel>Annuler</button></div>`;
+  dialog.querySelector('[data-continue]').onclick = () => { dialog.close(); go('wizard'); };
+  dialog.querySelector('[data-discard]').onclick = () => {
+    dialog.close(); draft = null; step = 1; returnToWizard = false; proceed();
+  };
+  dialog.querySelector('[data-cancel]').onclick = () => dialog.close();
+  dialog.addEventListener('close', () => dialog.remove());
+  document.body.append(dialog);
+  dialog.showModal();
+}
+function openDocuments(type) {
+  const proceed = () => { filter = type; go('docs'); };
+  if (draft && type !== 'all' && draft.type !== type) resolveCurrentDraft(proceed, type === 'devis' ? 'les devis' : 'les factures');
+  else proceed();
 }
 function wizard() {
   if (!draft) return home();
@@ -477,7 +494,7 @@ function originalRender() {
     ]
       .map(
         ([v, l]) =>
-          `<button class="${filter === v ? "active" : ""}" onclick="filter='${v}';render()">${l}</button>`,
+          `<button class="${filter === v ? "active" : ""}" onclick="openDocuments('${v}')">${l}</button>`,
       )
       .join(
         "",
@@ -867,6 +884,7 @@ async function initialize() {
     docs = [];
     reminders = [];
     document.getElementById("feature-dialog")?.remove();
+    document.getElementById("draft-dialog")?.remove();
     recurrenceDoc = null;
     recurrenceEdit = null;
     logoDraft = null;

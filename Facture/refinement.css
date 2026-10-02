@@ -1,4 +1,4 @@
-/* Compositions matched to the ten approved visual concepts. */
+/* Compositions des onze apparences, dont l'accueil original. */
 [hidden] {display:none !important;}
 .list-search {display:flex;align-items:center;gap:10px;width:min(100%,620px);margin:0 0 18px;padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:var(--warm-white);color:var(--muted);}
 .list-search input {width:100%;min-width:0;border:0!important;outline-offset:6px;background:transparent!important;padding:0!important;min-height:28px;font-size:.9rem;}
@@ -56,15 +56,15 @@
  [data-interface=corail] .ui-metric.paid {background:#f4ecff;}
  [data-interface=corail] .ui-metric strong {color:#e13747;}
  [data-interface=corail] .ui-metric.paid strong {color:#6434ad;}
- [data-interface=citron] .ui-metric {border:0;border-right:1px solid #ddd;background:transparent;border-radius:0;}
- [data-interface=citron] .ui-metric:first-child {border-left:4px solid #d8ee00;}
- [data-interface=citron] .ui-metric strong {font-size:2.3rem;font-family:'Courier New',monospace;color:#161616;}
+ [data-interface=citron] .ui-metric {border:0;border-right:1px solid var(--line);background:transparent;border-radius:0;}
+ [data-interface=citron] .ui-metric:first-child {border-left:4px solid var(--ui-accent);}
+ [data-interface=citron] .ui-metric strong {font-size:2.3rem;font-family:'Courier New',monospace;color:var(--ui-accent);}
  [data-interface=citron] .interface-home {grid-template-columns:minmax(0,1fr) 280px;grid-template-areas:'greeting actions' 'metrics activity' 'invoices invoices' 'follow follow';}
  [data-interface=citron] .ui-greeting h1 {font-size:3rem;}
  [data-interface=citron] .ui-activity {padding:14px;border:0;}
  [data-interface=citron] .ui-activity .muted {display:none;}
  [data-interface=citron] .ui-activity h2 {font-size:1rem;}
- [data-interface=citron] aside nav a.active {background:#d8ee00;color:#111;}
+ [data-interface=citron] aside nav a.active {background:var(--ui-accent);color:#111;}
  [data-interface=turquoise] .interface-home {grid-template-columns:255px minmax(0,1fr);grid-template-areas:'greeting greeting' 'actions invoices' 'metrics invoices' 'follow activity';}
  [data-interface=turquoise] .ui-metrics {grid-template-columns:1fr;}
  [data-interface=turquoise] .ui-actions {display:grid;align-self:start;}
@@ -102,6 +102,27 @@
  [data-interface=sable] .ui-curve svg {max-height:190px;}
  [data-interface=sable] .ui-actions button:not(.primary) {background:#eadfce;}
  [data-interface] .list-search {max-width:100%;}
+ [data-interface] .home-table-scroll {position:relative;}
+ [data-interface] .recent-panel .section-head {background:transparent;color:var(--ui-ink);}
+ [data-interface] aside .link {background:transparent;border:0;}
+ [data-interface=classique] {--green:#123b2f;--green-dark:#12382d;--tint-1:#fbf0ea;--tint-2:#f0f7ef;--tint-3:#fbf4ea;}
+ [data-interface=classique] .workspace {background:radial-gradient(ellipse at 47% 13%,#fffdfa,#fffaf4 75%,#fffdfa);}
+ [data-interface=classique] aside {background:linear-gradient(155deg,#173c30,#102f25);}
+ [data-interface=classique] aside nav a.active {background:#ffffff29;}
+ [data-interface=classique] .side-foot {display:block;color:#b5c8bc;margin-top:45px;}
+ [data-interface=classique] .side-foot strong {font-family:'Caveat',cursive;font-weight:400;}
+ [data-interface=classique] header {background:transparent;border:0;}
+ [data-interface=classique] .home-hero {grid-template-columns:minmax(0,1fr) 220px;min-height:200px;}
+ [data-interface=classique] .hero-art {display:block;height:180px;}
+ [data-interface=classique] .hero-art img {width:100%;height:100%;object-fit:contain;}
+ [data-interface=classique] .action-card.main {background:#bd5537;border-color:#bd5537;color:#fffdfa;}
+ [data-interface=classique] .action-card.main .action-icon {color:inherit;}
+ [data-interface=classique] .stat-unpaid {background:#fbf0ea;}
+ [data-interface=classique] .stat-paid {background:#f0f7ef;}
+ [data-interface=classique] .stat-quotes {background:#fbf4ea;}
+ [data-interface=classique] .stat-unpaid strong,[data-interface=classique] .stat-quotes strong {color:#bd5537;}
+ [data-interface=classique] .stat-paid strong {color:#123b2f;}
+ [data-interface=classique] .recent-panel {background:#fffdfa;}
  @media(max-width:1250px) {
    [data-interface] .ui-metric strong {font-size:1.65rem;}
    [data-interface] .ui-actions {flex-wrap:wrap;}
@@ -117,6 +138,10 @@
    [data-layout=top] .layout,[data-layout=top-left] .layout,[data-layout=top-right] .layout {grid-template-rows:max-content auto;}
  }
  @media(max-width:650px) {
+   [data-interface=classique] .side-foot {display:none;}
+   [data-interface=classique] .home-hero {grid-template-columns:minmax(0,1fr) 100px;min-height:150px;}
+   [data-interface=classique] .hero-art {height:120px;}
+   [data-interface=classique] .home-hero h1 {font-size:2rem;}
    [data-interface] .ui-metrics {grid-template-columns:1fr;}
    [data-interface] main {padding:18px 12px;}
    [data-interface] .ui-metric {display:flex;min-height:0;padding:18px;}

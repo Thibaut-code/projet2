@@ -1,5 +1,12 @@
 # Facture Facile avec Supabase
 
+## Mail, brouillons et thème original — version 2026.10.02.2
+
+Le contact Orbytek et le destinataire du formulaire utilisent `thibaut@orbytek.be`.
+Passer d'une facture en cours aux devis (ou inversement) propose de continuer le brouillon, de l'abandonner pour ouvrir la destination demandée, ou d'annuler. Continuer conserve les champs et l'étape ; abandonner un brouillon de modification ne supprime pas le document enregistré.
+
+Le thème Graphite et vert terminal remplace le jaune par un vert lumineux sur fond sombre. L'apparence **11. Original · Vert et terracotta** reprend l'accueil initial avec son radiateur. Publiez aussi `radiateur.png` et exécutez **`supabase/migrations/20261002_original_interface.sql`**, après la migration équipe, pour permettre la sauvegarde du thème 11 sur les comptes. La migration est fournie et doit être appliquée à la base Supabase ; elle n'est pas exécutée par le navigateur.
+
 ## Interfaces, recherche et équipes — version 2026.10.02.1
 
 Les dix apparences reprennent davantage les compositions des maquettes : marques et icônes propres, cartes colorées, navigation horizontale ou latérale, colonnes d’actions, tableaux et graphiques différents. Le menu horizontal n’a plus de hauteur minimale d’un écran. Les graphiques utilisent uniquement les données enregistrées, sans exemples ajoutés aux comptes.

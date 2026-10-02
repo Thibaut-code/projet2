@@ -9,8 +9,8 @@ context.teamContext=null;context.companyOwner=()=>context.account.id;
 context.document.querySelector=()=>null;
 return {context,storage,writes};
 }
-test('les dix apparences ne modifient ni le métier ni les prestations personnelles',async()=>{
-const e=environment();const keys=vm.runInContext('Object.keys(UI_THEMES)',e.context);assert.equal(keys.length,10);
+test('les onze apparences ne modifient ni le métier ni les prestations personnelles',async()=>{
+const e=environment();const keys=vm.runInContext('Object.keys(UI_THEMES)',e.context);assert.equal(keys.length,11);
 for(const key of keys){await e.context.chooseTheme(key);assert.equal(e.context.themeChoice,'plombier');assert.equal(e.context.company.catalogs.plombier[0][0],'Personnalisée');assert.equal(e.storage.get('facture-facile-interface:a'),key)}
 });
 test('le métier sauvegarde la clé existante sans modifier l’apparence',async()=>{
