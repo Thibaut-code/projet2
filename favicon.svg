@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff"/>
+      <stop offset=".5" stop-color="#a9b9c9"/>
+      <stop offset="1" stop-color="#f4f8fc"/>
+    </linearGradient>
+    <linearGradient id="orbit" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#ff8b24"/>
+      <stop offset="1" stop-color="#ffd28b"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#081521"/>
+  <circle cx="32" cy="32" r="19" fill="none" stroke="url(#metal)" stroke-width="8"/>
+  <ellipse cx="32" cy="32" rx="29" ry="8" transform="rotate(-32 32 32)"
+    fill="none" stroke="url(#orbit)" stroke-width="3.5"/>
+  <circle cx="48" cy="20" r="4" fill="#ffb65c"/>
+</svg>
