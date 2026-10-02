@@ -5,13 +5,32 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const env = (name: string) => Deno.env.get(name) || '';
 
-const reply = (body: unknown, status = 200) =>
+// Une seule origine est renvoyée : jamais une liste ni une origine arbitraire.
+const corsHeaders = (req: Request): Record<string, string> => {
+  const allowedOrigins = new Set([
+    'https://orbytek.be',
+    'https://www.orbytek.be',
+    env('APP_ORIGIN').trim(),
+  ]);
+  const origin = req.headers.get('Origin');
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Headers':
+      'authorization,x-client-info,apikey,content-type,x-retry-count,traceparent,tracestate,baggage',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+  if (origin && allowedOrigins.has(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  }
+  return headers;
+};
+
+const jsonReply = (headers: Record<string, string>, body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': env('APP_ORIGIN'),
-      'Vary': 'Origin',
+      ...headers,
     },
   });
 
@@ -62,15 +81,15 @@ async function external(url: string, options: RequestInit) {
 }
 
 Deno.serve(async (req) => {
+  const headers = corsHeaders(req);
+  const reply = (body: unknown, status = 200) => jsonReply(headers, body, status);
+  if (req.headers.get('Origin') && !headers['Access-Control-Allow-Origin']) {
+    return reply({ error: 'Origine non autorisée' }, 403);
+  }
   if (req.method === 'OPTIONS') {
     return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': env('APP_ORIGIN'),
-        'Access-Control-Allow-Headers':
-          'authorization,x-client-info,apikey,content-type',
-        'Access-Control-Allow-Methods': 'POST',
-        'Vary': 'Origin',
-      },
+      status: 204,
+      headers,
     });
   }
 
@@ -80,12 +99,13 @@ Deno.serve(async (req) => {
 
   let job: { document_id: string; action: string } | null = null;
 
-  const admin = createClient(
-    env('SUPABASE_URL'),
-    env('SUPABASE_SERVICE_ROLE_KEY')
-  );
+  let admin: ReturnType<typeof createClient> | undefined;
 
   try {
+    admin = createClient(
+      env('SUPABASE_URL'),
+      env('SUPABASE_SERVICE_ROLE_KEY')
+    );
     const token = req.headers
       .get('Authorization')
       ?.replace(/^Bearer\s+/i, '');
@@ -416,28 +436,32 @@ Deno.serve(async (req) => {
       e
     );
 
-    if (job) {
-      const failed = await admin
-        .from('integration_jobs')
-        .update({
-          state: 'needs_review',
-          result: {
-            mode: 'generate',
-            failedAt: new Date().toISOString(),
-            error:
-              e instanceof Error
-                ? e.message
-                : 'Erreur du service',
-          },
-        })
-        .eq('document_id', job.document_id)
-        .eq('action', job.action);
+    if (job && admin) {
+      try {
+        const failed = await admin
+          .from('integration_jobs')
+          .update({
+            state: 'needs_review',
+            result: {
+              mode: 'generate',
+              failedAt: new Date().toISOString(),
+              error:
+                e instanceof Error
+                  ? e.message
+                  : 'Erreur du service',
+            },
+          })
+          .eq('document_id', job.document_id)
+          .eq('action', job.action);
 
-      if (failed.error) {
-        console.error(
-          'Unable to mark integration job as needs_review:',
-          failed.error
-        );
+        if (failed.error) {
+          console.error(
+            'Unable to mark integration job as needs_review:',
+            failed.error
+          );
+        }
+      } catch (cleanupError) {
+        console.error('Unable to mark integration job as needs_review:', cleanupError);
       }
     }
 
