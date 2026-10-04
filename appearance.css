@@ -1,4 +1,4 @@
-/* Dark artwork remains in cosmos.css. All new visual rules are scoped to light mode. */
+/* Géométrie commune : basculer le thème ne doit pas déplacer les textes. */
 .appearance-control { display:flex; gap:3px; padding:4px; border:1px solid var(--line); border-radius:30px; flex-shrink:0; margin-left:auto; }
 .appearance-control button { border:0; border-radius:24px; padding:9px 12px; background:transparent; color:var(--ink); cursor:pointer; font:600 12px Arial,sans-serif; white-space:nowrap; min-height:40px; }
 .appearance-control button[aria-pressed="true"] { background:#dfbb91; color:#20180f; }
@@ -7,8 +7,8 @@
 header nav { flex-wrap:wrap; gap:12px 24px; padding-block:14px; }
 header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; }
 html[data-appearance="light"] { color-scheme:light; --ink:#112440; --paper:#f6f9ff; --muted:#4c6079; --line:#cddbec; --accent:#006aaa; }
-html[data-appearance="light"] body { font-family:Inter,Arial,sans-serif; background:var(--paper); }
-html[data-appearance="light"] :is(h1,h2,h3) { font-family:'Space Grotesk',Inter,Arial,sans-serif; font-weight:600; }
+html[data-appearance] body { font-family:Inter,Arial,sans-serif; background:var(--paper); }
+html[data-appearance] :is(h1,h2,h3) { font-family:'Space Grotesk',Inter,Arial,sans-serif; font-weight:600; }
 html[data-appearance="light"] header { background:#ffffffed; color:var(--ink); border-color:var(--line); }
 /* Reuse the existing logo designed for white backgrounds. */
 html[data-appearance="light"] .brand img { filter:none !important; mix-blend-mode:multiply !important; }
@@ -18,13 +18,16 @@ html[data-appearance="light"] .navlinks a:hover,html[data-appearance="light"] .n
 html[data-appearance="light"] .navlinks .navcta { color:#fff; background:#0869bc; border-color:#0869bc; }
 html[data-appearance="light"] .appearance-control { background:#edf4fc; }
 html[data-appearance="light"] .appearance-control button[aria-pressed="true"] { color:#fff; background:#0869bc; box-shadow:0 3px 12px #0873d022; }
-html[data-appearance="light"] .cosmos-hero { color:var(--ink); min-height:calc(100svh - 135px); display:flex; align-items:center; background:radial-gradient(ellipse at 84% 42%,#a5e9ff70,transparent 52%),radial-gradient(ellipse at 6% 20%,#d8ccff55,transparent 55%),#f6f9ff; }
+html[data-appearance] .cosmos-hero { min-height:calc(100svh - 135px); display:flex; align-items:center; }
+html[data-appearance="light"] .cosmos-hero { color:var(--ink); background:radial-gradient(ellipse at 84% 42%,#a5e9ff70,transparent 52%),radial-gradient(ellipse at 6% 20%,#d8ccff55,transparent 55%),#f6f9ff; }
 html[data-appearance="light"] .hero-haze { background-image:linear-gradient(#4675a610 1px,transparent 1px),linear-gradient(90deg,#4675a610 1px,transparent 1px); background-size:64px 64px; mask-image:linear-gradient(180deg,transparent,#000 35%,transparent); animation:day-grid 14s ease-in-out infinite alternate; }
 @keyframes day-grid { from { transform:translateY(-8px); } to { transform:translateY(8px); } }
-html[data-appearance="light"] .cosmos-hero h1 { font-size:clamp(36px,5vw,70px); letter-spacing:-2px; white-space:normal; color:var(--ink); }
+html[data-appearance] .cosmos-hero h1 { font-size:clamp(36px,5vw,70px); letter-spacing:-2px; white-space:normal; }
+html[data-appearance="light"] .cosmos-hero h1 { color:var(--ink); }
 html[data-appearance="light"] .cosmos-hero h1 em { color:#0869bc; background:linear-gradient(100deg,#006aaa,#7052c6); background-clip:text; -webkit-text-fill-color:transparent; }
-html[data-appearance="light"] .hero-heading { padding-top:46px; }
-html[data-appearance="light"] .cosmos-hero .hero-subtitle { color:#223d5e; font-weight:500; }
+html[data-appearance] .hero-heading { padding-top:46px; }
+html[data-appearance] .cosmos-hero .hero-subtitle { font-weight:500; }
+html[data-appearance="light"] .cosmos-hero .hero-subtitle { color:#223d5e; }
 html[data-appearance="light"] :is(.eyebrow,.hero .eyebrow,.section-head .eyebrow,.support-banner .eyebrow,.page-intro .eyebrow,.price-card .eyebrow,.page-cta .eyebrow) { color:#006aaa; }
 html[data-appearance="light"] :is(.cosmos-hero .lead,.cosmos-hero .micro,.scroll-cue,.motion-toggle,.planet-caption,.card-number,.tags,.contact-details span,.contact-text,.contact-hint,.page-intro p:last-child,.page-cta p:not(.eyebrow),.portfolio-note) { color:var(--muted); }
 html[data-appearance="light"] .status-dot { background:#007d9c; box-shadow:0 0 14px #00c4ea55; }
@@ -45,7 +48,7 @@ html[data-appearance="light"] footer { background:#edf3fb; }
 html[data-appearance="light"] .footer-inner { color:var(--muted); }
 html[data-appearance="light"] .page-intro { color:var(--ink); background:radial-gradient(ellipse at 90% 20%,#bbe5ff88,transparent 60%),#f3f7ff; }
 html[data-appearance="light"] .page-intro h1 em { color:#0869bc; }
-html[data-appearance="light"] .creation-copy h3 { font-family:'Space Grotesk',Arial,sans-serif; }
+html[data-appearance] .creation-copy h3 { font-family:'Space Grotesk',Inter,Arial,sans-serif; }
 html[data-appearance="light"] :is(.creation-description,.creation-tags li,.creation-promise) { color:var(--muted); }
 html[data-appearance="light"] :is(.creation-meta,.creation-link) { color:#006aaa; }
 html[data-appearance="light"] .creation-tags li { border-color:var(--line); }
@@ -56,5 +59,13 @@ html[data-appearance="light"] .skip-link { color:#112440; background:#fff; }
 html[data-appearance="light"] :focus-visible { outline-color:#0869bc; }
 @media(min-width:1101px) { header .navlinks { font-size:12px; gap:4px 15px; } }
 @media(max-width:1100px) { header .navlinks { flex-basis:100%; } .appearance-control { margin:8px auto 0; } }
-@media(max-width:800px) { html[data-appearance="light"] .cosmos-hero { min-height:0; } html[data-appearance="light"] .cosmos-hero h1 { font-size:clamp(36px,8vw,52px); letter-spacing:-1.5px; } .appearance-control { margin-top:10px; } }
+@media(max-width:800px) { html[data-appearance] .cosmos-hero { min-height:0; } html[data-appearance] .cosmos-hero h1 { font-size:clamp(36px,8vw,52px); letter-spacing:-1.5px; } .appearance-control { margin-top:10px; } }
 @media(prefers-reduced-motion:reduce) { html[data-appearance="light"] *,html[data-appearance="light"] *:before,html[data-appearance="light"] *:after { animation:none!important; transition:none!important; } }
+
+/* Réserver le même cadre aux deux logos, malgré leurs marges différentes. */
+.brand { display:flex; align-items:center; justify-content:center; width:262.5px; height:96.5px; }
+.brand img { max-height:100%; object-fit:contain; }
+.footer-inner .brand { width:218.75px; height:80.4px; }
+html[data-appearance="dark"] .brand img { width:262.5px; }
+html[data-appearance="dark"] .footer-inner .brand img { width:218.75px; }
+@media(max-width:800px) { header .brand { width:237.5px; height:87.3px; } html[data-appearance="dark"] header .brand img { width:237.5px; } }
