@@ -10,7 +10,8 @@ if (-not [Uri]::TryCreate($SiteUrl, [UriKind]::Absolute, [ref]$ParsedUrl) -or $P
 $SiteUrl = $ParsedUrl.AbsoluteUri.TrimEnd('/') + '/'
 $Encoding = New-Object System.Text.UTF8Encoding($false)
 # Pages publiques du site vitrine ; les ancres sont des sections de l'accueil.
-$PagePaths = @('', 'creations.html', 'tarifs.html')
+# Si le domaine change, mettre aussi à jour les URL JSON-LD, Open Graph, CNAME et la redirection du formulaire.
+$PagePaths = @('', 'creations.html', 'tarifs.html', 'creation-sites-web.html', 'applications-sur-mesure.html', 'integrations-automatisations.html', 'support-informatique.html', 'projet-facture-facile.html')
 # Valider toutes les pages avant de modifier les fichiers.
 foreach ($PagePath in $PagePaths) {
     $FileName = if ($PagePath) { $PagePath } else { 'index.html' }
@@ -25,6 +26,15 @@ foreach ($PagePath in $PagePaths) {
     $HtmlPath = Join-Path $PSScriptRoot $FileName
     $PageUrl = [System.Security.SecurityElement]::Escape($SiteUrl + $PagePath)
     $Html = [IO.File]::ReadAllText($HtmlPath)
+    # Garder les URL de partage et les identifiants JSON-LD cohérents avec la canonique.
+    $OldCanonical = [regex]::Match($Html, '<link\b[^>]*rel="canonical"[^>]*href="([^"]+)"')
+    if ($OldCanonical.Success) {
+        $OldPageUrl = $OldCanonical.Groups[1].Value
+        $OldSiteUrl = if ($PagePath -and $OldPageUrl.EndsWith($PagePath)) { $OldPageUrl.Substring(0, $OldPageUrl.Length - $PagePath.Length) } else { $OldPageUrl }
+        if ($OldSiteUrl.EndsWith('/')) {
+            $Html = $Html.Replace($OldSiteUrl, $SiteUrl)
+        }
+    }
     $Canonical = '<link rel="canonical" href="' + $PageUrl + '">'
     if ([regex]::IsMatch($Html, $CanonicalPattern)) {
         $Html = [regex]::Replace($Html, $CanonicalPattern, [System.Text.RegularExpressions.MatchEvaluator]{ param($Match) $Canonical + "`n" })
