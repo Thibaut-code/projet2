@@ -9,7 +9,7 @@ Le récapitulatif complet, les vérifications, les 48 pistes de mots-clés, les 
 Quatre pages de services et une présentation du projet Facture Facile ont été ajoutées. Les métadonnées, les liens internes, le sitemap et les images ont été améliorés en conservant le style du site. Les changements sont locaux ; aucune publication n’a été effectuée.
 
 - index.html : accueil, services, support IT, présentation et contact.
-- tarifs.html : grille existante de tarifs indicatifs, avec support affiché à 59 €/h ; montant à confirmer par le propriétaire.
+- tarifs.html : grille existante de tarifs indicatifs, avec support affiché à 59 €/h ; montant confirmé par le propriétaire.
 - creations.html : portfolio de projets et démonstrations, à distinguer des références clients.
 - creation-sites-web.html : création et refonte de sites.
 - applications-sur-mesure.html : développement d’applications métiers.

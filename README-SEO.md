@@ -4,11 +4,27 @@ Date : 6 octobre 2026. Travail effectué dans les fichiers locaux du site.
 
 ## Résultat
 
+### Lien du salon de coiffure
+
+Les deux liens du portfolio vers Maison Élégance utilisent désormais `coiffeur/index.html`, conformément au chemin enregistré dans Git. Le précédent `Coiffeur/index.html` fonctionnait sous Windows mais ne correspondait pas à la casse du dossier publié. La correction doit être publiée pour réparer les liens du site en ligne.
+
+### Formules de suivi mensuel
+
+La page Tarifs présente trois cartes : Essentiel à 29 € HTVA/mois (sauvegarde mensuelle), Pro à 49 € HTVA/mois (sauvegarde hebdomadaire et 1 heure d’intervention) et Business à 99 € HTVA/mois (sauvegarde quotidienne et 2 heures au total). Hébergement, DNS, un domaine .be/.com/.fr et surveillance de disponibilité 24 h/24 sont inclus dès Essentiel. Pro porte le badge « Recommandé » et un bouton mis en avant. Le délai de corrections techniques de 24 heures ouvrées reprend le texte demandé par le propriétaire. Les boutons renvoient au contact. Les cartes s’empilent sur mobile.
+
+### Tarif et icône dans Google
+
+Le tarif du support est confirmé à 59 €/h par le propriétaire. La description SEO de l’accueil et sa description de partage mentionnent ce montant. L’ancienne version de l’accueil indiquait 60 €/h dans sa description, son bandeau de support et le choix du formulaire ; ces mentions ne figurent plus dans les pages locales actuelles.
+
+Le favicon local est bien la planète bleue : PNG et ICO de 64 × 64 px, icône Apple de 180 × 180 px. Les fichiers sont déclarés dans l’accueil et ne sont pas bloqués par robots.txt. Après publication, inspecter `https://orbytek.be/` dans Google Search Console et demander l’indexation. Google doit explorer à nouveau l’accueil et le favicon ; l’affichage de l’icône et la description finale restent à sa discrétion. Le site en ligne n’a pas pu être vérifié lors de ce contrôle.
+
 ### Localisation intégrée
 
-Rixensart est maintenant présent dans les titres de l’accueil, de la création de sites et du support. Le Brabant wallon est ciblé dans les titres des applications et des intégrations. Les descriptions, les textes visibles et les données structurées précisent aussi Charleroi et Namur. Aucun sous-menu Services n’est réintroduit.
+Rixensart est maintenant présent dans les titres de l’accueil, de la création de sites et du support. Le Brabant wallon est ciblé dans les titres des applications et des intégrations. Les textes visibles et les données structurées précisent les communes voisines : Waterloo, La Hulpe, Ottignies–Louvain-la-Neuve et Lasne. Aucun sous-menu Services n’est réintroduit.
 
 ### Adaptation aux grands écrans
+
+Un lien « Retour en haut ↑ » est ajouté à la fin des sections Services, À propos de Thibaut et Comment ça se passe. Il pointe vers le début de l’accueil, comme le lien du pied de page. La zone cliquable mesure au moins 44 px de haut pour faciliter son utilisation sur mobile.
 
 À partir de 1 101 px, le contenu s’élargit progressivement jusqu’à 1 600 px. La planète grandit avec sa colonne. Les paragraphes de l’accueil et la navigation utilisent des tailles fluides, plafonnées pour conserver une lecture confortable. Les lignes des textes longs restent limitées en largeur. Le titre principal augmente sur les écrans de 1 440 px et plus.
 
@@ -33,7 +49,7 @@ Sources locales : `index.html`, `tarifs.html`, `creations.html`, `CNAME`, le sit
 - L’histoire de Facture Facile et l’expérience annoncée de plus de 15 ans existaient dans l’accueil. Elles n’ont pas été inventées ; elles restent à valider par le propriétaire.
 - Les budgets cités viennent de la grille existante. Leur caractère HTVA/TVAC reste à préciser par le propriétaire.
 
-Ville confirmée par le propriétaire : Rixensart. Zone ciblée : Brabant wallon, Charleroi (Hainaut) et Namur. Namur est traité comme ville et le Hainaut n’est pas ciblé en entier ; ces périmètres peuvent être précisés ensuite. L’adresse privée ne doit pas être publiée ; seule la ville est mentionnée. Le numéro BCE et les modalités de déplacement restent à compléter. Les lieux des démonstrations ne servent pas à localiser Orbytek.
+Ville confirmée par le propriétaire : Rixensart. Zone ciblée : Rixensart — Brabant wallon, avec Waterloo, La Hulpe, Ottignies–Louvain-la-Neuve et Lasne comme communes voisines confirmées. Cette zone remplace la précédente mention de Charleroi et Namur. L’adresse privée ne doit pas être publiée ; seule la ville est mentionnée. Le numéro BCE et les modalités de déplacement restent à compléter. Les lieux des démonstrations ne servent pas à localiser Orbytek.
 
 Aucune donnée Search Console, mesure de trafic ou recherche locale détaillée n’a été disponible. Aucun volume de recherche, score de concurrence ou résultat commercial n’est annoncé. Les priorités de mots-clés ci-dessous sont des hypothèses éditoriales.
 
@@ -75,7 +91,7 @@ Il n’y a pas de pages clonées par commune. Une future page locale doit apport
 
 ## 3. Réserve de 48 mots-clés
 
-Les requêtes utilisent désormais Rixensart comme ville de base et le Brabant wallon comme région principale. Tester ensuite les variantes Charleroi et Namur selon les recherches observées, sans créer de pages locales dupliquées. Garder les niches réellement souhaitées. Les noms d’outils sont des pistes de contenu, pas des compétences ajoutées aux pages.
+Les requêtes utilisent désormais Rixensart comme ville de base et le Brabant wallon comme région principale. Tester ensuite les variantes Waterloo, La Hulpe, Ottignies–Louvain-la-Neuve et Lasne selon les recherches observées, sans créer de pages locales dupliquées. Garder les niches réellement souhaitées. Les noms d’outils sont des pistes de contenu, pas des compétences ajoutées aux pages.
 
 P1 = intention commerciale précise, concurrence potentiellement plus accessible mais non mesurée. P2 = comparaison. P3 = information à traiter après les pages commerciales. La précision peut aussi signifier une demande très faible : valider les recherches avant d’y consacrer beaucoup de temps.
 
@@ -175,7 +191,7 @@ Modèle Organization sans adresse privée, à compléter si nécessaire :
   },
   "areaServed": {
     "@type": "AdministrativeArea",
-    "name": "Rixensart et le Brabant wallon, Charleroi et Namur"
+    "name": "Rixensart et le Brabant wallon, Waterloo, La Hulpe, Ottignies-Louvain-la-Neuve et Lasne"
   },
   "founder": {
     "@type": "Person",
@@ -195,7 +211,7 @@ Supprimer les propriétés inconnues et les placeholders avant publication. Ne p
 
 ## 5. SEO local : actions à effectuer dans les comptes
 
-- [x] Ville et zone ciblée confirmées : Rixensart, Brabant wallon, Charleroi et Namur.
+- [x] Ville et zone ciblée confirmées : Rixensart — Brabant wallon ; communes voisines : Waterloo, La Hulpe, Ottignies–Louvain-la-Neuve et Lasne.
 - [x] Langues proposées confirmées : français et anglais, intégrées au site.
 - [ ] Préciser les modalités de déplacement : déplacement chez les clients, prise en charge à distance et éventuels frais.
 - [ ] Vérifier l’éligibilité Google Business Profile : accueil réel de clients ou déplacements chez eux ; une activité exclusivement en ligne n’est pas éligible.
