@@ -69,3 +69,18 @@ html[data-appearance="light"] :focus-visible { outline-color:#0869bc; }
 html[data-appearance="dark"] .brand img { width:262.5px; }
 html[data-appearance="dark"] .footer-inner .brand img { width:218.75px; }
 @media(max-width:800px) { header .brand { width:237.5px; height:87.3px; } html[data-appearance="dark"] header .brand img { width:237.5px; } }
+
+/* Wider desktop composition; paragraphs keep a comfortable reading measure. */
+@media(min-width:1101px) {
+  .wrap { max-width:1600px; }
+  header .navlinks { font-size:clamp(.8125rem,.5rem + .35vw,.9375rem); gap:6px clamp(14px,1.1vw,22px); }
+  .hero-grid { grid-template-columns:minmax(0,1fr) minmax(0,1.08fr); gap:clamp(26px,2.5vw,64px); }
+  .cosmos-hero .lead { font-size:clamp(1rem,.8rem + .3vw,1.125rem); line-height:1.75; max-width:52ch; }
+  .cosmos-hero .hero-subtitle { font-size:clamp(1.5625rem,1.25rem + .4vw,1.875rem); }
+  .cosmos-hero .micro { font-size:13px; line-height:1.6; letter-spacing:.8px; }
+  .hero-actions .button { font-size:14px; }
+  .page-intro p,.contact-text,.about-copy p { max-width:65ch; }
+}
+@media(min-width:1440px) {
+  html[data-appearance] .cosmos-hero h1 { font-size:clamp(4.375rem,4vw,5rem); }
+}

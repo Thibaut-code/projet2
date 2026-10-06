@@ -6,7 +6,13 @@ Date : 6 octobre 2026. Travail effectué dans les fichiers locaux du site.
 
 ### Localisation intégrée
 
-Rixensart est maintenant présent dans les titres de l’accueil, de la création de sites et du support. Le Brabant wallon est ciblé dans les titres des applications et des intégrations. Les descriptions, les textes visibles et les données structurées précisent aussi Charleroi et Namur. Aucun sous-menu Services n’est réintroduit. Le style et les tailles de police sont conservés.
+Rixensart est maintenant présent dans les titres de l’accueil, de la création de sites et du support. Le Brabant wallon est ciblé dans les titres des applications et des intégrations. Les descriptions, les textes visibles et les données structurées précisent aussi Charleroi et Namur. Aucun sous-menu Services n’est réintroduit.
+
+### Adaptation aux grands écrans
+
+À partir de 1 101 px, le contenu s’élargit progressivement jusqu’à 1 600 px. La planète grandit avec sa colonne. Les paragraphes de l’accueil et la navigation utilisent des tailles fluides, plafonnées pour conserver une lecture confortable. Les lignes des textes longs restent limitées en largeur. Le titre principal augmente sur les écrans de 1 440 px et plus.
+
+Les règles mobiles sont conservées. Vérification de l’accueil sur ordinateur, tablette et mobile : aucun débordement horizontal aux largeurs testées (390, 820, 1 101, 1 440, 1 920 et 2 560 px). Aperçu : `reports/seo/grand-ecran.jpg`. La version du fichier CSS est actualisée dans les pages pour renouveler son cache après publication.
 
 Le site possède maintenant quatre pages de services et une page consacrée à Facture Facile. L’accueil, les tarifs et le portfolio disposent de titres plus explicites, de descriptions uniques et de liens vers ces contenus. Les données structurées et le sitemap sont complétés. Les logos et le portrait sont servis dans des fichiers WebP plus légers.
 
