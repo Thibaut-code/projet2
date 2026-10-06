@@ -15,14 +15,8 @@
   }
   apply(mode);
   document.addEventListener('DOMContentLoaded', () => {
-    const nav = document.querySelector('header nav');
-    if (!nav) return;
-    const control = document.createElement('div');
-    control.className = 'appearance-control';
-    control.setAttribute('role', 'group');
-    control.setAttribute('aria-label', 'Apparence du site');
-    control.innerHTML = '<button type="button" data-appearance-choice="light"><span aria-hidden="true">☀</span> Clair</button><button type="button" data-appearance-choice="dark"><span aria-hidden="true">☾</span> Sombre</button>';
-    nav.append(control);
+    const control = document.querySelector('header .appearance-control');
+    if (!control) return;
     control.addEventListener('click', event => {
       const button = event.target.closest('[data-appearance-choice]');
       if (!button) return;

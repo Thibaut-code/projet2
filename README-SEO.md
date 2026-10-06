@@ -4,6 +4,12 @@ Date : 6 octobre 2026. Travail effectué dans les fichiers locaux du site.
 
 ## Résultat
 
+### Stabilisation du chargement — 7 octobre 2026
+
+Le rapport PageSpeed Insights de l’accueil en ligne indiquait un CLS ordinateur de 0,228, dont 0,226 associé au bloc d’accueil, et signalait les polices Inter et Space Grotesk. Les neuf pages utilisant le sélecteur d’apparence incluent désormais ses boutons dans le HTML initial ; le script active les contrôles existants au lieu de les ajouter après chargement. L’espace du bouton d’animation est réservé dès le départ. Les polices Google utilisent `display=optional` : une police arrivée trop tard ne remplace pas le texte déjà affiché. Sur une connexion lente, la police de secours peut donc rester utilisée pour cette visite.
+
+Mesure locale via PerformanceObserver : CLS de 0 sur les chargements testés de l’accueil en thème clair et sombre sur ordinateur, et en thème clair sur mobile. Ce test local sans limitation réseau n’est pas comparable directement au test Lighthouse distant ; le nouveau score en ligne reste à mesurer après publication. Détails : `reports/seo/stabilite-chargement.json`. Aperçu : `reports/seo/affichage-stable.jpg`.
+
 ### Lien du salon de coiffure
 
 Les deux liens du portfolio vers Maison Élégance utilisent désormais `coiffeur/index.html`, conformément au chemin enregistré dans Git. Le précédent `Coiffeur/index.html` fonctionnait sous Windows mais ne correspondait pas à la casse du dossier publié. La correction doit être publiée pour réparer les liens du site en ligne.

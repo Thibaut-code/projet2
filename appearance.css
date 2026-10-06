@@ -4,6 +4,8 @@
 .appearance-control button[aria-pressed="true"] { background:#dfbb91; color:#20180f; }
 .appearance-control button span { margin-right:4px; font-size:16px; }
 .appearance-control button:focus-visible { outline:3px solid var(--accent); outline-offset:3px; }
+/* Reserve the animation control's space before the deferred script starts. */
+.motion-toggle[hidden] { display:block; visibility:hidden; }
 header nav { flex-wrap:wrap; gap:12px 24px; padding-block:14px; }
 header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; }
 html[data-appearance="light"] { color-scheme:light; --ink:#112440; --paper:#f6f9ff; --muted:#4c6079; --line:#cddbec; --accent:#006aaa; }
