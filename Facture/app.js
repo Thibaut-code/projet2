@@ -120,6 +120,12 @@ let account = null;
 let db = null;
 let busy = false;
 let authMode = "login";
+const authRedirectParams = new URLSearchParams(location.hash.slice(1));
+const recoveryRequested = authRedirectParams.get("type") === "recovery" ||
+  new URLSearchParams(location.search).get("reset") === "1";
+const recoveryLinkError = authRedirectParams.has("error") ||
+  new URLSearchParams(location.search).has("error");
+if (recoveryRequested || recoveryLinkError) authMode = "reset";
 let sessionGeneration = 0;
 let dataState = "idle";
 let dataLoad = null;
@@ -605,6 +611,32 @@ function authHTML() {
       "Renseignez l’URL et la clé publique dans config.js, puis rechargez la page.",
     );
   }
+  if (authMode === "reset-success") {
+    return `${intro("Mot de passe modifié", "Votre nouveau mot de passe est enregistré.")}
+      <div class="panel auth-panel"><button class="primary" onclick="authMode='login';go('home');render()">Accéder à mon espace</button></div>`;
+  }
+  if (authMode === "reset") {
+    if (!account || recoveryLinkError) {
+      return `${intro("Réinitialiser mon mot de passe", "Ce lien est invalide ou a expiré. Demandez un nouveau lien de récupération.")}
+        <div class="panel auth-panel"><button class="primary" onclick="authMode='forgot';render()">Demander un nouveau lien</button></div>`;
+    }
+    return `${intro("Choisir un nouveau mot de passe", "Votre compte et vos documents seront conservés.")}
+      <form id="resetpasswordform" class="panel auth-panel">
+        <label class="field">Nouveau mot de passe<input name="password" type="password" autocomplete="new-password" minlength="6" required></label>
+        <label class="field">Confirmer le mot de passe<input name="confirmation" type="password" autocomplete="new-password" minlength="6" required></label>
+        <button class="primary" type="submit">Enregistrer mon nouveau mot de passe</button>
+        <p id="authmessage" role="status" aria-live="polite"></p>
+      </form>`;
+  }
+  if (authMode === "forgot") {
+    return `${intro("Mot de passe oublié", "Recevez un lien pour choisir un nouveau mot de passe.")}
+      <form id="recoveryrequestform" class="panel auth-panel">
+        <label class="field">Adresse e-mail<input name="email" type="email" autocomplete="email" required></label>
+        <button class="primary" type="submit">Recevoir le lien</button>
+        <button class="link" type="button" onclick="authMode='login';render()">Retour à la connexion</button>
+        <p id="authmessage" role="status" aria-live="polite"></p>
+      </form>`;
+  }
   return `${intro(authMode === "signup" ? "Créer mon compte" : "Me connecter", "Retrouvez vos clients et documents sur vos appareils.")}
         <form id="authform" class="panel auth-panel">
             <label class="field">Adresse e-mail<input type="email" name="email" autocomplete="email" required></label>
@@ -613,6 +645,7 @@ function authHTML() {
                 <button class="primary" type="submit">${authMode === "signup" ? "Créer mon compte" : "Me connecter"}</button>
             </div>
             <button class="link" type="button" onclick="authMode='${authMode === "signup" ? "login" : "signup"}';render()">${authMode === "signup" ? "J’ai déjà un compte" : "Créer un compte"}</button>
+            ${authMode === "login" ? '<button class="link" type="button" onclick="authMode=\'forgot\';render()">Mot de passe oublié ?</button>' : ''}
             <p id="authmessage" role="status"></p>
         </form>`;
 }
@@ -875,8 +908,13 @@ async function initialize() {
     window.APP_CONFIG.supabaseKey,
   );
   db.auth.onAuthStateChange((_event, session) => {
+    if (_event === "PASSWORD_RECOVERY") authMode = "reset";
+    if (_event === "SIGNED_OUT") authMode = "login";
     const nextId = session?.user?.id || null;
-    if (nextId === account?.id) return;
+    if (nextId === account?.id) {
+      if (_event === "PASSWORD_RECOVERY" || _event === "SIGNED_OUT") render();
+      return;
+    }
     const generation = ++sessionGeneration;
     account = session?.user || null;
     dataState = account ? "loading" : "idle";
@@ -913,12 +951,53 @@ async function initialize() {
 }
 
 document.addEventListener("submit", async (event) => {
+  if (["resetpasswordform", "recoveryrequestform"].includes(event.target.id)) {
+    event.preventDefault();
+    const form = event.target;
+    const message = form.querySelector("#authmessage");
+    const submit = form.querySelector('[type="submit"]');
+    if (submit.disabled) return;
+    const values = new FormData(form);
+    submit.disabled = true;
+    message.textContent = "Veuillez patienter…";
+    try {
+      if (form.id === "recoveryrequestform") {
+        const { error } = await db.auth.resetPasswordForEmail(String(values.get("email")).trim(), {
+          redirectTo: location.origin + location.pathname + "?reset=1",
+        });
+        if (error) throw error;
+        message.textContent = "Si un compte correspond à cette adresse, vous recevrez un lien de récupération. Vérifiez aussi vos courriers indésirables.";
+      } else {
+        const password = String(values.get("password"));
+        if (password.length < 6) throw Error("Le mot de passe doit contenir au moins 6 caractères.");
+        if (password !== String(values.get("confirmation"))) throw Error("Les deux mots de passe ne correspondent pas.");
+        if (!account || authMode !== "reset" || recoveryLinkError) throw Error("Ce lien est invalide ou a expiré. Demandez un nouveau lien.");
+        const { error } = await db.auth.updateUser({ password });
+        if (error) throw error;
+        form.reset();
+        authMode = "reset-success";
+        // Retirer les paramètres de récupération pour les prochains chargements.
+        history.replaceState(null, "", location.pathname + "#home");
+        render();
+      }
+    } catch (error) {
+      message.textContent = ["session_not_found", "refresh_token_not_found", "otp_expired"].includes(error.code) || /Auth session missing/i.test(error.message || "")
+        ? "Ce lien est invalide ou a expiré. Demandez un nouveau lien."
+        : error.message || "Impossible de réinitialiser le mot de passe. Réessayez.";
+    } finally {
+      submit.disabled = false;
+    }
+    return;
+  }
   if (event.target.id !== "authform") return;
   event.preventDefault();
   const form = event.target;
   const message = form.querySelector("#authmessage");
   const submit = form.querySelector('[type="submit"]');
   const values = new FormData(form);
+  const isSignup = authMode === "signup";
+  const duplicateMessage =
+    "Un compte existe déjà avec cette adresse e-mail. Cliquez sur « J’ai déjà un compte » pour vous connecter.";
   submit.disabled = true;
   message.textContent = "Veuillez patienter…";
   try {
@@ -928,7 +1007,7 @@ document.addEventListener("submit", async (event) => {
       password: String(values.get("password")),
     };
     const result =
-      authMode === "signup"
+      isSignup
         ? await db.auth.signUp({
             ...credentials,
             options: {
@@ -936,8 +1015,24 @@ document.addEventListener("submit", async (event) => {
             },
           })
         : await db.auth.signInWithPassword(credentials);
-    if (result.error) throw result.error;
-    if (authMode === "signup" && !result.data.session) {
+    if (result.error) {
+      if (isSignup && (
+        ["user_already_exists", "email_exists"].includes(result.error.code) ||
+        /user already registered|user already exists|email already (?:registered|exists)/i.test(result.error.message || "")
+      )) {
+        message.textContent = duplicateMessage;
+        return;
+      }
+      throw result.error;
+    }
+    // Supabase peut masquer un compte confirmé par un utilisateur sans identités.
+    if (isSignup && !result.data.session &&
+      Array.isArray(result.data.user?.identities) &&
+      result.data.user.identities.length === 0) {
+      message.textContent = duplicateMessage;
+      return;
+    }
+    if (isSignup && !result.data.session) {
       message.textContent =
         "Vérifiez votre boîte e-mail pour confirmer votre compte.";
     } else {
@@ -1340,6 +1435,12 @@ function validBelgianIBAN(value) {
   );
 }
 function render() {
+  if (["reset", "reset-success", "forgot"].includes(authMode)) {
+    $("#main").innerHTML = authHTML();
+    $("#logout").hidden = !account;
+    $("#themebutton").hidden = true;
+    return;
+  }
   originalRender();
   if (account && dataState !== "ready") return;
   if (account && location.hash === "#recurring")

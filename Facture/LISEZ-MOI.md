@@ -1,5 +1,13 @@
 # Facture Facile avec Supabase
 
+## Récupération du mot de passe — version 2026.10.08.2
+
+Le lien envoyé avec **Authentication > Users > Send password recovery** ouvre désormais un formulaire de nouveau mot de passe avec confirmation. L’événement Supabase `PASSWORD_RECOVERY` est traité même si l’utilisateur est déjà connecté. Les liens invalides ou expirés proposent de demander un nouveau lien. Le bouton **Mot de passe oublié ?** est également disponible sur la connexion.
+
+Publiez `app.js` et `index.html` ensemble. Dans **Authentication > URL Configuration**, vérifiez que la **Site URL** mène à Facture Facile. Ajoutez aussi l’URL publique exacte de sa page avec `?reset=1` dans **Redirect URLs** (par exemple `https://votre-domaine/Facture/index.html?reset=1`). Le lien envoyé depuis l’application utilise cette adresse ; celui envoyé depuis le tableau de bord Supabase utilise la redirection configurée sur le projet. Si un modèle d’e-mail personnalisé est utilisé, son lien doit conserver `{{ .ConfirmationURL }}` pour que Supabase valide la récupération.
+
+Après publication, envoyez un nouveau lien, choisissez et confirmez un mot de passe, puis vérifiez la connexion avec ce mot de passe. Les tests locaux couvrent les réponses Supabase simulées ; aucun e-mail réel n’est envoyé par les tests.
+
 ## Thème 12 Orbytek · Horizon bleu — version 2026.10.02.3
 
 L'apparence 12 reprend la maquette Orbytek : noir profond, bleu électrique, horizon terrestre, trois indicateurs et dernières factures. Les boutons utilisent les parcours habituels, y compris le choix de continuer ou d'abandonner le brouillon. Le nom d'accueil vient du profil de la personne connectée ; les montants viennent des documents du compte.
