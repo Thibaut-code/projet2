@@ -13,7 +13,7 @@ const UI_THEMES = {
   classique: { label: 'Original · Vert et terracotta', font: 'DM Sans', heading: '"Fraunces", Georgia, serif', layout: 'classic', icon: 'line', colors: ['#fffdfa','#fffdfa','#123b2f','#bd5537','#12382d','#fffdfa'] },
   orbytek: { label: 'Orbytek · Horizon bleu', font: 'Inter', layout: 'orbit', icon: 'line', colors: ['#060f17','#0c1a25','#f2f7ff','#29bdf2','#050f18','#e6f1ff'] }
 };
-let uiChoice = 'bleu';
+let uiChoice = 'orbytek';
 let uiColumnReady = false;
 function uiStorageKey() { return `facture-facile-interface:${account?.id || 'guest'}`; }
 function localInterface() { try { return localStorage.getItem(uiStorageKey()); } catch { return null; } }
@@ -32,7 +32,7 @@ const ICON_PATHS = {
 };
 function uiIcon(name) { return `<svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_PATHS[name] || ICON_PATHS.docs}</svg>`; }
 function applyInterface(key) {
-  uiChoice = Object.hasOwn(UI_THEMES, key) ? key : 'bleu';
+  uiChoice = Object.hasOwn(UI_THEMES, key) ? key : 'orbytek';
   const t = UI_THEMES[uiChoice], root = document.documentElement;
   root.dataset.interface = uiChoice; root.dataset.layout = t.layout; root.dataset.icons = t.icon;
   ['--ui-canvas','--ui-surface','--ui-ink','--ui-accent','--ui-nav','--ui-nav-ink'].forEach((name,i) => root.style.setProperty(name,t.colors[i]));

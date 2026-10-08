@@ -17,7 +17,7 @@ test('le métier sauvegarde la clé existante sans modifier l’apparence',async
 const e=environment();e.context.applyInterface('violet');await e.context.chooseProfession('jardinier');assert.equal(e.context.themeChoice,'jardinier');assert.equal(vm.runInContext('uiChoice',e.context),'violet');assert.deepEqual(e.writes.map(x=>({...x})),[{theme:'jardinier'}]);
 });
 test('les préférences sont isolées par compte et les thèmes inconnus reviennent au défaut',()=>{
-const e=environment();e.context.applyInterface('inconnu');assert.equal(vm.runInContext('uiChoice',e.context),'bleu');assert.equal(e.context.uiStorageKey(),'facture-facile-interface:a');e.context.account={id:'b'};assert.equal(e.context.localInterface(),null);
+const e=environment();e.context.applyInterface('inconnu');assert.equal(vm.runInContext('uiChoice',e.context),'orbytek');assert.equal(e.context.uiStorageKey(),'facture-facile-interface:a');e.context.account={id:'b'};assert.equal(e.context.localInterface(),null);
 });
 
 test('le thème 12 utilise les documents du compte pour ses trois montants',()=>{

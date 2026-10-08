@@ -112,7 +112,7 @@ function localTheme() {
 function applyTheme(key) {
   themeChoice = Object.hasOwn(PROFESSIONS, key) ? key : "plombier";
   uiColumnReady = Object.hasOwn(company, 'ui_theme');
-  applyInterface(teamContext?.ui_theme || localInterface() || company.ui_theme || 'bleu');
+  applyInterface(teamContext?.ui_theme || localInterface() || company.ui_theme || 'orbytek');
 }
 
 let docs = [];
@@ -1705,7 +1705,7 @@ async function sendPeppolTest(id) {
   try {const result=await integration('peppol-test',d); d.peppol=result.peppol; render(); toast('Demande de test acceptée. Vérifiez sa livraison chez le fournisseur.');} catch(e){featureError(e);} finally{featureBusy=false;}
 }
 interfaceOptions();
-applyInterface('bleu');
+applyInterface('orbytek');
 initialize();
 
 // --- Dashboard activité -----------------------------------------------------
