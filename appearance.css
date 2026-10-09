@@ -31,7 +31,7 @@ html[data-appearance] .hero-heading { padding-top:46px; }
 html[data-appearance] .cosmos-hero .hero-subtitle { font-weight:500; }
 html[data-appearance="light"] .cosmos-hero .hero-subtitle { color:#223d5e; }
 html[data-appearance="light"] :is(.eyebrow,.hero .eyebrow,.section-head .eyebrow,.support-banner .eyebrow,.page-intro .eyebrow,.price-card .eyebrow,.page-cta .eyebrow) { color:#006aaa; }
-html[data-appearance="light"] :is(.cosmos-hero .lead,.cosmos-hero .micro,.scroll-cue,.motion-toggle,.planet-caption,.card-number,.tags,.contact-details span,.contact-text,.contact-hint,.page-intro p:last-child,.page-cta p:not(.eyebrow),.portfolio-note) { color:var(--muted); }
+html[data-appearance="light"] :is(.cosmos-hero .lead,.cosmos-hero .micro,.scroll-cue,.motion-toggle,.planet-caption,.card-number,.tags,.contact-details span,.contact-intro p:not(.eyebrow),.contact-text,.contact-hint,.page-intro p:last-child,.page-cta p:not(.eyebrow),.portfolio-note) { color:var(--muted); }
 html[data-appearance="light"] .status-dot { background:#007d9c; box-shadow:0 0 14px #00c4ea55; }
 html[data-appearance="light"] :is(.button,.contact-button,.form-submit) { background:linear-gradient(115deg,#0869bc,#6044b6); color:#fff; border-color:#0869bc; box-shadow:0 6px 22px #006aaa20; }
 html[data-appearance="light"] :is(.button,.contact-button,.form-submit):hover { color:#fff; box-shadow:0 10px 26px #006aaa35; }
@@ -68,9 +68,9 @@ html[data-appearance="light"] :focus-visible { outline-color:#0869bc; }
 .brand { display:flex; align-items:center; justify-content:center; width:262.5px; height:96.5px; }
 .brand img { max-height:100%; object-fit:contain; }
 .footer-inner .brand { width:218.75px; height:80.4px; }
-html[data-appearance="dark"] .brand img { width:262.5px; }
-html[data-appearance="dark"] .footer-inner .brand img { width:218.75px; }
-@media(max-width:800px) { header .brand { width:237.5px; height:87.3px; } html[data-appearance="dark"] header .brand img { width:237.5px; } }
+html[data-appearance] .brand img { width:262.5px; }
+html[data-appearance] .footer-inner .brand img { width:218.75px; }
+@media(max-width:800px) { header .brand { width:237.5px; height:87.3px; } html[data-appearance] header .brand img { width:237.5px; } }
 
 /* Wider desktop composition; paragraphs keep a comfortable reading measure. */
 .section-return { display:flex; justify-content:flex-end; margin-top:28px; }
