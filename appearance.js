@@ -10,7 +10,10 @@
     document.querySelector('meta[name="theme-color"]')?.setAttribute('content', mode === 'light' ? '#f6f9ff' : '#090c0d');
     document.querySelectorAll('[data-appearance-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.appearanceChoice === mode)));
     document.querySelectorAll('.brand img').forEach(image => { image.src = mode === 'light' ? 'orbytek-logo-light.webp' : 'orbytek-logo-dark.webp'; });
-    document.querySelector('.planet-scene')?.setAttribute('aria-label', `Planète technologique ${mode === 'light' ? 'bleue' : 'cuivrée'}, entourée d’orbites et de connexions lumineuses`);
+    document.querySelectorAll('img[data-appearance-light][data-appearance-dark]').forEach(image => {
+      image.src = mode === 'light' ? image.dataset.appearanceLight : image.dataset.appearanceDark;
+    });
+    document.querySelector('.planet-scene')?.setAttribute('aria-label', `Planète technologique ${mode === 'light' ? 'bleue' : 'cuivrée'}, avec trois points pour explorer nos solutions`);
     document.dispatchEvent(new Event('appearancechange'));
   }
   apply(mode);

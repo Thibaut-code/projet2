@@ -7,7 +7,7 @@
 /* Reserve the animation control's space before the deferred script starts. */
 .motion-toggle[hidden] { display:block; visibility:hidden; }
 header nav { flex-wrap:wrap; gap:12px 24px; padding-block:14px; }
-header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; }
+header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; font-family:Arial,Helvetica,sans-serif; line-height:1.65; }
 html[data-appearance="light"] { color-scheme:light; --ink:#112440; --paper:#f6f9ff; --muted:#4c6079; --line:#cddbec; --accent:#006aaa; }
 html[data-appearance] body { font-family:Inter,Arial,sans-serif; background:var(--paper); }
 html[data-appearance] :is(h1,h2,h3) { font-family:'Space Grotesk',Inter,Arial,sans-serif; font-weight:600; }
@@ -67,10 +67,13 @@ html[data-appearance="light"] :focus-visible { outline-color:#0869bc; }
 /* Réserver le même cadre aux deux logos, malgré leurs marges différentes. */
 .brand { display:flex; align-items:center; justify-content:center; width:262.5px; height:96.5px; }
 .brand img { max-height:100%; object-fit:contain; }
+/* Le menu garde la géométrie de l’accueil, sans dépendre de la police du contenu. */
+header .brand { flex:0 0 262.5px; width:262.5px; height:96.5px; }
+html[data-appearance] header .brand img { flex:none; width:262.5px; max-width:none; height:auto; }
 .footer-inner .brand { width:218.75px; height:80.4px; }
 html[data-appearance] .brand img { width:262.5px; }
 html[data-appearance] .footer-inner .brand img { width:218.75px; }
-@media(max-width:800px) { header .brand { width:237.5px; height:87.3px; } html[data-appearance] header .brand img { width:237.5px; } }
+@media(max-width:800px) { header .brand { flex-basis:237.5px; width:237.5px; height:87.3px; } html[data-appearance] header .brand img { width:237.5px; } }
 
 /* Wider desktop composition; paragraphs keep a comfortable reading measure. */
 .section-return { display:flex; justify-content:flex-end; margin-top:28px; }

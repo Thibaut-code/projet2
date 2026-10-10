@@ -37,3 +37,43 @@
 .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 @media(max-width:760px) { .project-grid { grid-template-columns:1fr; gap:25px; } .creation-copy { padding:23px; } .portfolio-page .page-intro { padding:55px 0; } .portfolio-page .page-intro h1 { letter-spacing:-1px; } .preview-open { opacity:1; transform:translate(-50%,0); } }
 @media(prefers-reduced-motion:reduce) { .creation-card,.creation-link,.preview-open { transition:none; transform:none; } .creation-card.entering { opacity:1; transform:none; } }
+
+/* Le guide du portfolio : texte à gauche, astronaute et univers à droite. */
+.portfolio-page .page-intro { padding:36px 0; border-bottom:1px solid var(--line); }
+.portfolio-page .creations-hero { display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr); align-items:center; gap:24px; }
+.portfolio-page .page-intro h1 { font-size:clamp(42px,4.8vw,82px); line-height:1.12; letter-spacing:-2px; margin:24px 0 30px; }
+.portfolio-page .page-intro .creations-lead { font-size:clamp(15px,1.1vw,18px); line-height:1.65; max-width:600px; }
+.creations-universe { position:relative; min-width:0; width:90%; margin-inline:auto; aspect-ratio:4 / 3; isolation:isolate; }
+.creations-orbits { position:absolute; inset:0; width:100%; height:100%; z-index:-1; filter:drop-shadow(0 0 5px #23caff50); }
+.creations-astronaut { position:absolute; width:58%; height:77%; object-fit:contain; left:2%; top:18%; filter:drop-shadow(0 18px 20px #1366c529); }
+.portfolio-page .page-intro .astronaut-speech { position:absolute; z-index:2; left:9%; top:6%; padding:16px 20px; margin:0; max-width:none; border-radius:20px; background:#ffffffed; color:#14285b; font-size:clamp(13px,1.15vw,18px); font-weight:600; line-height:1.4; transform:rotate(-12deg); box-shadow:0 10px 30px #3d86d215; }
+.astronaut-speech:after { content:''; position:absolute; right:35%; bottom:-20px; width:30px; height:26px; background:inherit; clip-path:polygon(0 0,100% 0,100% 100%); }
+.universe-card { position:absolute; z-index:3; display:grid; grid-template-columns:clamp(44px,4.5vw,68px) 1fr auto; align-items:center; gap:12px; width:44%; padding:17px; border:1px solid #ffffff80; border-radius:32px; color:#172557; background:#ffffffdc; box-shadow:0 12px 35px #288ee514; transition:transform .2s,box-shadow .2s; }
+.universe-card:hover { transform:translateY(-4px); box-shadow:0 16px 35px #288ee52b; }
+.universe-card:focus-visible { outline:3px solid #087dda; outline-offset:5px; }
+.universe-card-web { right:10%; top:13%; transform:rotate(2deg); }
+.universe-card-app { right:-2%; top:43%; }
+.universe-card-integrations { right:7%; bottom:0; }
+.universe-card strong { display:block; font-size:clamp(14px,1.1vw,18px); line-height:1.3; margin-bottom:5px; }
+.universe-description { display:block; color:#6178af; font-size:clamp(12px,.95vw,16px); line-height:1.45; }
+.universe-icon { display:grid; place-items:center; aspect-ratio:1; border-radius:50%; color:white; background:linear-gradient(140deg,#3987ff,#0055ff); box-shadow:0 6px 12px #0876ec25; }
+.universe-icon svg { width:56%; height:56%; }
+.universe-card-app .universe-icon { background:linear-gradient(145deg,#9b6aff,#3867ff); }
+.universe-card-integrations .universe-icon { background:linear-gradient(145deg,#25d9f5,#009df0); }
+.universe-arrow { font-size:26px; color:#238aff; line-height:1; }
+html[data-appearance="dark"] .portfolio-page .page-intro { background:radial-gradient(ellipse at 78% 45%,#23303980,transparent 62%),radial-gradient(ellipse at 55% 15%,#d8a57412,transparent 55%),#090c0d; }
+html[data-appearance="dark"] .universe-card { background:linear-gradient(145deg,#252b30f5,#161c20f5); color:#f3ede5; border-color:#d8a57435; box-shadow:0 12px 30px #0004; }
+html[data-appearance="dark"] .portfolio-page .page-intro .astronaut-speech { background:#252b30; color:#f3ede5; box-shadow:0 10px 28px #0004; border:1px solid #d8a57435; }
+html[data-appearance="dark"] .universe-description { color:#bbb8b3; }
+html[data-appearance="dark"] .universe-arrow { color:#d8a574; }
+html[data-appearance="dark"] .universe-icon { background:linear-gradient(145deg,#477aaf,#254c77); color:#e8f0fa; box-shadow:0 5px 14px #0003; }
+html[data-appearance="dark"] .universe-card-app .universe-icon { background:linear-gradient(145deg,#76679d,#4b507a); }
+html[data-appearance="dark"] .universe-card-integrations .universe-icon { background:linear-gradient(145deg,#398c9c,#245a70); }
+html[data-appearance="dark"] .creations-astronaut { filter:brightness(.85) saturate(.72) drop-shadow(0 16px 24px #0005); }
+html[data-appearance="dark"] .creations-orbits { opacity:.55; filter:saturate(.55) drop-shadow(0 0 5px #70b3cc20); }
+html[data-appearance="dark"] .universe-card:hover { border-color:#d8a57480; box-shadow:0 16px 35px #0006; }
+html[data-appearance="dark"] .universe-card:focus-visible { outline-color:#d8a574; }
+@media(min-width:1700px) { .portfolio-page .page-intro { padding:44px 0; } }
+@media(max-width:1100px) and (min-width:761px) { .portfolio-page .creations-hero { grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); gap:8px; } .portfolio-page .page-intro h1 { font-size:clamp(38px,4.8vw,53px); } .universe-card { padding:14px; gap:10px; border-radius:24px; width:47%; grid-template-columns:44px 1fr auto; } .universe-arrow { font-size:20px; } .portfolio-page .page-intro .astronaut-speech { padding:14px 17px; font-size:13px; } }
+@media(max-width:760px) { .portfolio-page .page-intro { padding:42px 0 30px; } .portfolio-page .creations-hero { grid-template-columns:1fr; gap:20px; } .portfolio-page .page-intro h1 { font-size:clamp(40px,8vw,58px); letter-spacing:-1.5px; margin:18px 0 24px; } .creations-universe { width:96%; max-width:540px; margin-inline:auto; } .universe-card { grid-template-columns:clamp(32px,8vw,48px) 1fr auto; padding:12px; gap:8px; border-radius:22px; width:47%; } .universe-card strong { font-size:clamp(12px,3vw,17px); } .universe-description { font-size:clamp(10px,2.7vw,14px); } .universe-arrow { font-size:20px; } .portfolio-page .page-intro .astronaut-speech { left:4%; top:4%; padding:12px 16px; font-size:clamp(11px,2.8vw,16px); border-radius:16px; } }
+@media(prefers-reduced-motion:reduce) { .universe-card { transition:none; } }

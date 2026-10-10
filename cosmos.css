@@ -37,6 +37,21 @@ h2 { font-family:Georgia,'Times New Roman',serif; font-weight:400; letter-spacin
 .planet-fallback { position:absolute; width:66%; aspect-ratio:1; border-radius:50%; left:17%; top:13%; background:radial-gradient(circle at 27% 26%,#8c6447 0%,#302820 40%,#0c1112 72%); box-shadow:inset -12px -8px 25px #000,0 0 28px #d99b5438; border:1px solid #c39e6c; }
 .canvas-ready .planet-fallback { visibility:hidden; }
 .planet-caption { position:absolute; bottom:5%; width:100%; text-align:center; color:#c3ab90; font:10px monospace; letter-spacing:2px; text-transform:uppercase; z-index:2; }
+.planet-hotspot { position:absolute; left:0; top:0; z-index:3; display:grid; place-items:center; width:44px; height:44px; border-radius:50%; will-change:transform; }
+.planet-hotspot[hidden] { display:none; }
+.planet-hotspot:hover,.planet-hotspot:focus-visible { z-index:4; }
+.planet-hotspot:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.planet-hotspot-dot { display:grid; place-items:center; width:25px; height:25px; border:2px solid #ffe8cd; border-radius:50%; color:#fff4e5; background:radial-gradient(circle at 30% 25%,#ebc495,#a06b40); box-shadow:0 0 16px #d8a57488; transition:scale .2s,box-shadow .2s; }
+.planet-hotspot-dot svg { width:16px; height:16px; }
+.planet-hotspot:hover .planet-hotspot-dot,.planet-hotspot:focus-visible .planet-hotspot-dot { scale:1.15; box-shadow:0 0 24px #d8a574cc; }
+.planet-hotspot-label { position:absolute; left:0; top:0; width:180px; padding:12px 15px; border:1px solid #d8a57450; border-radius:15px; color:#f3ede5; background:#20272c; box-shadow:0 8px 24px #0003; visibility:hidden; opacity:0; pointer-events:none; will-change:transform,opacity; transition:opacity .15s; }
+.planet-hotspot:hover .planet-hotspot-label,.planet-hotspot:focus-visible .planet-hotspot-label { visibility:visible; opacity:1; }
+.planet-hotspot-label strong { display:block; font-size:14px; line-height:1.35; }
+.planet-hotspot-label small { display:block; margin-top:4px; color:#bbb8b3; font-size:12px; line-height:1.4; }
+html[data-appearance="light"] .planet-hotspot-dot { color:#fff; border-color:#d7f5ff; background:radial-gradient(circle at 30% 25%,#51cfff,#0874d9); box-shadow:0 0 16px #098ef080; }
+html[data-appearance="light"] .planet-hotspot:hover .planet-hotspot-dot,html[data-appearance="light"] .planet-hotspot:focus-visible .planet-hotspot-dot { box-shadow:0 0 24px #098ef0bb; }
+html[data-appearance="light"] .planet-hotspot-label { color:#14285b; background:#fff; border-color:#cbdcec; box-shadow:0 8px 24px #2675b923; }
+html[data-appearance="light"] .planet-hotspot-label small { color:#526d99; }
 .hero-controls { display:flex; justify-content:space-between; align-items:center; padding:0 0 25px; }
 .scroll-cue { color:#a99e93; font-size:10px; letter-spacing:1.4px; text-transform:uppercase; }
 .scroll-cue span { display:inline-block; margin-left:14px; color:#e4b483; animation:scroll-hint 2.4s ease-in-out infinite; }
