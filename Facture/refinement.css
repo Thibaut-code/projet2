@@ -6,6 +6,18 @@
 .team-settings {margin-bottom:24px;}
 .team-settings button {margin:8px 8px 12px 0;}
 .team-settings details {margin-top:16px;}
+/* Les titres des groupes restent dans les cartes, avec le même retrait. */
+#main fieldset,
+#main .team-settings {min-width:0;margin:0 0 24px;padding:24px;border:1px solid var(--line);border-radius:12px;background:var(--ui-surface,var(--canvas));}
+#main fieldset {display:flow-root;}
+#main fieldset > legend,
+#main .team-settings > h2 {font-family:var(--ui-heading,Manrope,Arial,sans-serif);font-size:1.15rem;font-weight:700;line-height:1.4;letter-spacing:0;margin:0 0 14px;padding:0;overflow-wrap:anywhere;}
+#main fieldset > legend {float:left;width:100%;}
+#main fieldset > legend + * {clear:both;}
+@media(max-width:650px) {
+ #main fieldset,
+ #main .team-settings {padding:18px;margin-bottom:18px;}
+}
 .team-list {list-style:none;padding:0;}
 .team-list li {display:flex;align-items:center;gap:16px;justify-content:space-between;border-bottom:1px solid var(--line);padding:14px 0;flex-wrap:wrap;}
 .document-heading .company-logo.logo-square {width:138px;height:138px;max-width:138px;max-height:138px;}
