@@ -7,7 +7,7 @@
 /* Reserve the animation control's space before the deferred script starts. */
 .motion-toggle[hidden] { display:block; visibility:hidden; }
 header nav { flex-wrap:wrap; gap:12px 24px; padding-block:14px; }
-header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; font-family:Arial,Helvetica,sans-serif; line-height:1.65; }
+header .navlinks { flex:1; justify-content:center; flex-wrap:wrap; gap:4px 20px; font-family:Poppins,Arial,Helvetica,sans-serif; font-weight:500; line-height:1.65; }
 html[data-appearance="light"] { color-scheme:light; --ink:#112440; --paper:#f6f9ff; --muted:#4c6079; --line:#cddbec; --accent:#006aaa; }
 html[data-appearance] body { font-family:Inter,Arial,sans-serif; background:var(--paper); }
 html[data-appearance] :is(h1,h2,h3) { font-family:'Space Grotesk',Inter,Arial,sans-serif; font-weight:600; }
@@ -17,7 +17,7 @@ html[data-appearance="light"] .brand img { filter:none !important; mix-blend-mod
 html[data-appearance="light"] header { backdrop-filter:blur(12px); }
 html[data-appearance="light"] .navlinks a { color:#425570; }
 html[data-appearance="light"] .navlinks a:hover,html[data-appearance="light"] .navlinks a[aria-current="page"] { color:#005f9d; }
-html[data-appearance="light"] .navlinks .navcta { color:#fff; background:#0869bc; border-color:#0869bc; }
+html[data-appearance="light"] header .navcta { color:#fff; background:#0869bc; border-color:#0869bc; }
 html[data-appearance="light"] .appearance-control { background:#edf4fc; }
 html[data-appearance="light"] .appearance-control button[aria-pressed="true"] { color:#fff; background:#0869bc; box-shadow:0 3px 12px #0873d022; }
 html[data-appearance] .cosmos-hero { min-height:calc(100svh - 135px); display:flex; align-items:center; }
@@ -114,4 +114,23 @@ html[data-appearance="light"] .plan-featured { box-shadow:0 12px 38px #006aaa18;
 }
 @media(min-width:1440px) {
   html[data-appearance] .cosmos-hero h1 { font-size:clamp(4.375rem,4vw,5rem); }
+}
+
+/* Keep the project link and appearance switch together at the right edge. */
+header .main-navigation { display:grid; grid-template-columns:auto minmax(0,1fr) auto; }
+header .header-actions { display:flex; align-items:center; gap:clamp(16px,2vw,32px); }
+header .header-actions .appearance-control { margin:0; }
+header .header-actions .navcta { display:block; white-space:nowrap; padding:11px 18px; background:#dfbb91; border:1px solid #dfbb91; border-radius:12px; color:#20180f; font:700 clamp(.8125rem,.5rem + .35vw,.9375rem)/1.65 Arial,Helvetica,sans-serif; }
+html[data-appearance="light"] header .header-actions .navcta { color:#fff; background:#0869bc; border-color:#0869bc; }
+header .header-actions .navcta:hover { text-decoration:none; filter:brightness(1.08); }
+@media(max-width:1100px) {
+  header .main-navigation { grid-template-columns:auto 1fr; }
+  header .header-actions { justify-self:end; grid-column:2; grid-row:1; }
+  header .main-navigation .navlinks { grid-column:1 / -1; grid-row:2; }
+}
+@media(max-width:650px) {
+  header .main-navigation { grid-template-columns:1fr; justify-items:center; }
+  header .header-actions { grid-column:1; grid-row:3; justify-self:center; gap:12px; }
+  header .header-actions .navcta { padding:10px 12px; font-size:12px; }
+  header .header-actions .appearance-control button { padding:8px; }
 }
